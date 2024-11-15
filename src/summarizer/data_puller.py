@@ -21,7 +21,6 @@ class DataPuller:
 		self.current_directory = current_directory
 		env_file = current_directory.joinpath(f".env_{environment}")
 		self.date = date
-		print(env_file, "this is the env file")
 		load_dotenv(dotenv_path=env_file, override=True)
 
 	def load_database_credentials(self) -> Dict[str, str]:

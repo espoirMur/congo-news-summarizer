@@ -3,5 +3,8 @@
     "PYTHONPATH": "${workspaceFolder}",
     "PATH": ""
   },
-  "python.defaultInterpreterPath": "${workspaceRoot}/.venv/bin/python"
+  "python.defaultInterpreterPath": "${workspaceRoot}/.venv/bin/python",
+  "cSpell.words": [
+    "shilouette"
+  ]
 }

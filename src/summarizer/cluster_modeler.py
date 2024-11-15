@@ -38,7 +38,7 @@ class HierarchicalClusterModeler:
 		return mergings
 
 	def select_best_distance(self, X: np.array, merging: np.array) -> tuple[np.array, float]:
-		"""start with the document embedding x, and the hierachical clustering, find the k that maximize the shilouette score"""
+		"""start with the document embedding x, and the hierarchical clustering, find the k that maximize the shilouette score"""
 		max_shilouette = float("-inf")
 		return_labels = np.zeros(X.shape[0])
 		best_k = 0
