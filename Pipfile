@@ -3,6 +3,11 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[[source]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cpu"
+verify_ssl = true
+
 [data-puller-packages]
 sqlalchemy = "==2.0.27"
 pgvector = "==0.2.4"
@@ -12,11 +17,11 @@ python-dotenv = "==1.0.1"
 pandas = "==2.2.3"
 
 [embedding-packages]
-
-torch = {version = "==2.2.0", file = "https://download.pytorch.org/whl/cpu/torch-2.2.0-cp310-none-linux_x86_64.whl"}
-sentence-transformers = "==2.3.1"
+torch = {version = "==2.2.0", index = "pytorch"}
+sentence-transformers = "==3.2.1"
 b2sdk= "==2.5.0"
 python-dotenv = "==1.0.1"
+numpy = "==1.26.4"
 
 [clustering-packages]
 b2sdk= "==2.5.0"
@@ -24,8 +29,9 @@ scikit-learn = "==1.4.0"
 python-dotenv = "==1.0.1"
 pandas = "==2.2.3"
 
+
 [dev-packages]
 notebook = "==7.2.2"
-pre-commit = "4.0.1"
-ruff = "=0.7.3"
+pre-commit = "==4.0.1"
+ruff = "==0.7.3"
 

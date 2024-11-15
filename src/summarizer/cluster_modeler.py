@@ -1,3 +1,4 @@
+from os import getenv
 from pathlib import Path
 
 import numpy as np
@@ -6,6 +7,7 @@ from scipy.cluster.hierarchy import fcluster, linkage
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics import silhouette_score
 
+from shared.cloud_storage import BackBlazeCloudStorage
 from src.shared.logger import setup_logger
 
 DEFAULT_TRANSFORMER_KWARGS = {
@@ -52,6 +54,7 @@ class HierarchicalClusterModeler:
 
 	def analyse_embeddings(
 		self,
+		documents: pd.DataFrame,
 		embeddings: np.array,
 		index: int,
 		embedding_model: SentenceTransformer,
@@ -60,7 +63,7 @@ class HierarchicalClusterModeler:
 		"""take a matrix of embeddings and the labels.
 		for each label compute the cosine similarity of the document with that label.
 		"""
-		document_in_index = self.documents.query(f"{label_column} == {index}")
+		document_in_index = documents.query(f"{label_column} == {index}")
 		with pd.option_context("display.max_colwidth", None):
 			print(document_in_index.title)
 		document_index = document_in_index.index
@@ -74,7 +77,12 @@ class HierarchicalClusterModeler:
 		important_news_df = news_df.loc[news_df.labels.isin(labels_with_more_than_one)]
 		return important_news_df
 
-	def run(self, today_news_embeddings: np.array) -> pd.DataFrame:
+	def run(self, embedding_path: str, environment: str) -> str:
+		"""start the clustering process"""
+		cloud_storage = BackBlazeCloudStorage(environment=environment)
+		today_news_embeddings = cloud_storage.download_npy_file(
+			bucket_name=getenv("BUCKET_NAME"), file_name=embedding_path
+		)
 		mergings = self.compute_linkage(today_news_embeddings)
 		return_labels, best_k = self.select_best_distance(today_news_embeddings, mergings)
 		logger.info(
@@ -84,4 +92,7 @@ class HierarchicalClusterModeler:
 		important_news_df = self.select_top_clusters(self.documents)
 		logger.info(f"the important news data is of shape: {important_news_df.shape[0]}")
 		logger.info(f"the number of labels are {np.unique(important_news_df.labels).shape[0]}")
-		return important_news_df
+		news_path = cloud_storage.save_df_to_blackbaze_bucket(
+			important_news_df, bucket_name=getenv("BUCKET_NAME")
+		)
+		return news_path

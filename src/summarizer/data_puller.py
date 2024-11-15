@@ -1,7 +1,5 @@
-from datetime import datetime
 from os import getenv
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from typing import Dict
 
 import pandas as pd
@@ -19,13 +17,9 @@ class DataPuller:
 
 	def __init__(self, environment: str, date: str) -> None:
 		current_directory = Path.cwd()
-		env_file = current_directory.joinpath(f".env_{environment}")
 		self.current_directory = current_directory
-		self.environment = environment
-		cloud_storage = BackBlazeCloudStorage(environment=self.environment)
-		self.cloud_storage = cloud_storage
+		env_file = current_directory.joinpath(f".env_{environment}")
 		self.date = date
-
 		load_dotenv(dotenv_path=env_file, override=True)
 
 	def load_database_credentials(self) -> Dict[str, str]:
@@ -68,28 +62,23 @@ class DataPuller:
 
 		return news_df
 
-	def save_data(self, data: pd.DataFrame, storage_mode="local") -> None:
+	def save_data(self, data: pd.DataFrame, storage_mode="local") -> str:
 		"""Save data either to the local environment or to a cloud bucket."""
 
 		if storage_mode == "local":
-			self.save_local(data)
+			return self.save_local(data)
 		else:
-			self.save_to_blackbaze_bucket(data)
+			cloud_storage = BackBlazeCloudStorage(environment=storage_mode)
+			return cloud_storage.save_df_to_blackbaze_bucket(data, date=self.date)
 
 	def save_local(self, data: pd.DataFrame) -> None:
 		"""Save data to the local environment."""
 		news_directory = self.current_directory.joinpath("datasets", "today_news")
 		data.to_csv(news_directory.joinpath(f"{self.date}-news-clusters.csv"))
 
-	def save_to_blackbaze_bucket(self, data: pd.DataFrame) -> None:
-		"""Save data to a cloud bucket."""
-		today = datetime.now().strftime("%Y-%m-%d")
-		with NamedTemporaryFile(delete=True, suffix=".csv") as temp_file:
-			data.to_csv(temp_file)
-			self.cloud_storage.upload_file(
-				bucket_name="congonews-clusters",
-				file_path=temp_file.name,
-				file_name=f"news-clusters-{today}-to-{self.date}.csv",
-				metadata={"date": datetime.now().strftime("%Y-%m-%d")},
-			)
-			logger.info(f"Saved {self.date} news to the cloud bucket")
+	def run(self, environment: str = "local") -> None:
+		"""
+		read the data and save it to te local bucket and return the path of the file from the bucket
+		"""
+		news_df = self.read_data()
+		return self.save_data(data=news_df, storage_mode=environment)

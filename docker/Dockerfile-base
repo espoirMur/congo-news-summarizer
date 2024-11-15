@@ -30,8 +30,6 @@ RUN pipenv install --categories=${PIP_SECTION} --system --deploy
 
 FROM python:3.10-slim AS runtime
 
-ARG COMPONENT_NAME
-ARG COMPONENT_PATH
 ENV PYROOT /opt/venv
 ENV PYTHONUSERBASE $PYROOT
 
@@ -42,12 +40,12 @@ COPY --from=python-deps $PYROOT/bin $PYROOT/bin
 
 
 RUN useradd --create-home es.py
-RUN mkdir /home/${COMPONENT_NAME}
-ENV WORKING_DIR=/home/${COMPONENT_NAME}
+RUN mkdir /home/code
+ENV WORKING_DIR=/home/code
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 ENV PATH="$PYROOT/bin:$PATH"
 ENV PYTHONPATH="${PYTHONPATH}:${WORKING_DIR}"
-COPY ${COMPONENT_PATH} ${WORKING_DIR}/src/${COMPONENT_NAME}
+COPY src ${WORKING_DIR}/src
 COPY src/shared ${WORKING_DIR}/src/shared
 WORKDIR ${WORKING_DIR}
 RUN chown -R es.py:es.py ${WORKING_DIR}
