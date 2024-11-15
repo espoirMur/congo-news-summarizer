@@ -1,0 +1,7 @@
+{
+  "terminal.integrated.env.osx": {
+    "PYTHONPATH": "${workspaceFolder}",
+    "PATH": ""
+  },
+  "python.defaultInterpreterPath": "${workspaceRoot}/.venv/bin/python"
+}

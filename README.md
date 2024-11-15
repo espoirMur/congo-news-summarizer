@@ -1,20 +1,9 @@
-# congo-news-summarizer
-A repository containing the code for the congo news summarizer
+## Congo News Summarizer
 
 
+Over the past months, I have been collecting a lot of news articles from major Congolese news websites. I have those articles saved in a Postgres database. There is a lot of fun stuff I can do with them. Among them is a news summarizer. I want to analyze the daily news and find out what the websites are talking about.
 
-### News Summarizer TODO
-- Write a post on the clustering
-- Polish and publsh the post
+In this project, I will try to build that news summarizer.
 
-- Deploy the summarizer model
+The first part of the project is documented [here](./notebooks/new-summarizer-clustering.ipynb)
 
-- Make the summarization script
-
-- Write the post about the summarizer
-- Write the UI
-- Write about the UI and finalizer
-- Work on th scheduling, (send the daily news summary and the weekly of the news ummary)
-- Scrape radio okapi
-- Fine tune the model on Radio okapi revue de presse and create the model.
-- Prepare a talk.

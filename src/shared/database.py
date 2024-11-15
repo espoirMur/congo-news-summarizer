@@ -1,37 +1,15 @@
 from collections.abc import Generator
-from os import getenv
-from typing import Dict, List, Optional
-from urllib.parse import quote
+from typing import Dict, List
 
-from dotenv import load_dotenv
 from psycopg2 import connect
 from psycopg2.extras import NamedTupleCursor
 from sqlalchemy.engine import Connection
 
-load_dotenv()
-
-database_user = getenv("POSTGRES_USER")
-database_password = getenv("POSTGRES_PASSWORD")
-database_host = getenv("POSTGRES_HOST")
-database_port = getenv("POSTGRES_PORT")
-database_name = getenv("POSTGRES_DB")
-
-
-postgres_uri = f"postgresql://{database_user}:{quote(database_password)}@{database_host}:{database_port}/{database_name}"
-
-default_database_crendentials = {
-	"user": database_user,
-	"password": database_password,
-	"host": database_host,
-	"port": database_port,
-	"database": database_name,
-}
-
 
 def generate_database_connection(
-	database_crendentials: Optional[Dict] = default_database_crendentials,
+	database_credentials: Dict,
 ) -> Connection:
-	database_connection = connect(**database_crendentials)
+	database_connection = connect(**database_credentials)
 	return database_connection
 
 

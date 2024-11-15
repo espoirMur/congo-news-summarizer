@@ -1,13 +1,9 @@
-from datetime import datetime
-from os import getenv
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from typing import Iterable
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-from src.shared.cloud_storage import BackBlazeCloudStorage
 from src.shared.logger import setup_logger
 
 DEFAULT_TRANSFORMER_KWARGS = {
@@ -46,22 +42,6 @@ class EmbeddingsComputer:
 		)
 		return today_news_embeddings
 
-	def run(self, data_path: str, date_to: str, environment: str) -> np.array:
-		bucket_name = getenv("BUCKET_NAME")
-		cloud_storage = BackBlazeCloudStorage(environment=environment)
-		documents = cloud_storage.download_file_as_numpy_array(
-			bucket_name=bucket_name, file_name=data_path
-		)
-		documents = documents[:, 1]
-		today = datetime.now().strftime("%Y-%m-%d")
+	def run(self, documents: Iterable[str]) -> np.array:
 		today_news_embeddings = self.embed_documents(documents)
-		file_name = f"embeddings/news-embeddings-{today}-to-{date_to}.npy"
-		with NamedTemporaryFile(delete=True, suffix=".npy") as temp_file:
-			np.save(temp_file, today_news_embeddings)
-			remote_path = cloud_storage.upload_file(
-				bucket_name=bucket_name,
-				file_path=temp_file.name,
-				file_name=file_name,
-				metadata={"date": date_to},
-			)
-		return remote_path
+		return today_news_embeddings

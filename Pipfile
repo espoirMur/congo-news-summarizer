@@ -8,26 +8,17 @@ name = "pytorch"
 url = "https://download.pytorch.org/whl/cpu"
 verify_ssl = true
 
-[data-puller-packages]
+[packages]
 sqlalchemy = "==2.0.27"
 pgvector = "==0.2.4"
 psycopg2-binary = "==2.9.9"
 b2sdk= "==2.5.0"
 python-dotenv = "==1.0.1"
 pandas = "==2.2.3"
-
-[embedding-packages]
 torch = {version = "==2.2.0", index = "pytorch"}
 sentence-transformers = "==3.2.1"
-b2sdk= "==2.5.0"
-python-dotenv = "==1.0.1"
 numpy = "==1.26.4"
-
-[clustering-packages]
-b2sdk= "==2.5.0"
 scikit-learn = "==1.4.0"
-python-dotenv = "==1.0.1"
-pandas = "==2.2.3"
 
 
 [dev-packages]

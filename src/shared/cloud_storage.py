@@ -2,10 +2,10 @@ import os
 from datetime import datetime
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Any
 
 import b2sdk.v2 as back_blaze
 import numpy as np
+import pandas as pd
 from b2sdk._internal.transfer.inbound.downloaded_file import DownloadedFile
 from dotenv import load_dotenv
 
@@ -62,23 +62,22 @@ class BackBlazeCloudStorage:
 		return bucket.download_file_by_name(file_name)
 
 	def save_df_to_blackbaze_bucket(
-		self, data: Any, bucket_name: str = BUCKET_NAME, **kwargs
+		self, data: pd.DataFrame, bucket_name: str = BUCKET_NAME, **kwargs
 	) -> None:
 		"""Save a dataframe to a cloud bucket."""
 		today = datetime.now().strftime("%Y-%m-%d")
 		date = kwargs.get("date", today)
 		file_name = f"news-clusters-{today}-to-{date}.csv"
 		with NamedTemporaryFile(delete=True, suffix=".csv") as temp_file:
-			content_to_save = data.content.str.replace(r"\r+|\n+|\t+", " ", regex=True)
-			content_to_save.to_csv(temp_file, sep="|")
-			remote_path = self.upload_file(
+			data.to_csv(temp_file, sep="|")
+			self.upload_file(
 				bucket_name=bucket_name,
 				file_path=temp_file.name,
 				file_name=file_name,
 				metadata=kwargs,
 			)
 			logger.info(f"Saved {date} news to the cloud bucket")
-			return remote_path
+			return file_name
 
 	def download_file_as_numpy_array(self, bucket_name: str, file_name: str) -> np.array:
 		"""Given the filename, download the file and return it as a numpy array"""
