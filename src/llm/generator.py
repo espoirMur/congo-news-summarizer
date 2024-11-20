@@ -97,9 +97,7 @@ class LLamaCppGeneratorComponent:
 	) -> str:
 		"""Generate response using the Llamma.cpp api"""
 		chat_input = self.generate_chat_input(template_values, prompt_template)
-		chat_tokens = self.tokenizer.apply_chat_template(
-			chat_input, tokenize=False, add_generation_prompt=True
-		)
+		chat_tokens = self.apply_chat_template(messages=chat_input, add_generation_prompt=True)
 		response = self.generate_response(chat_tokens)
 		return response
 
@@ -112,7 +110,7 @@ class LLamaCppGeneratorComponent:
 			logger.error(e)
 			return False
 
-	def generate_chat_prompt(self, messages, add_generation_prompt=False):
+	def apply_chat_template(self, messages, add_generation_prompt=False):
 		"""
 		Generates a structured prompt based on a list of message dictionaries.
 
