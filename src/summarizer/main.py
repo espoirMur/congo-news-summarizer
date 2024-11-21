@@ -3,7 +3,7 @@
 import argparse
 from datetime import datetime, timedelta
 
-from src.shared.cloud_storage import BackBlazeCloudStorage
+from shared.cloud_storage.cloud_storage import BackBlazeCloudStorage
 from src.summarizer.cluster_modeler import HierarchicalClusterModeler
 from src.summarizer.data_puller import DataPuller
 from src.summarizer.embeddings_computer import EmbeddingsComputer
