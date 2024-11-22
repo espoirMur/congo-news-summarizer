@@ -2,6 +2,7 @@ FROM python:3.10 as python-deps
 LABEL maintainer="Espoir Murhabazi<espoir.mur [] gmail>"
 
 # Never prompt the user for choices on installation/configuration of packages
+ARG PIP_SECTION
 ENV DEBIAN_FRONTEND noninteractive
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -21,14 +22,14 @@ COPY Pipfile Pipfile.lock ./
 RUN python -m venv $PYROOT
 ENV PATH=$PYROOT/bin:$PATH
 # Install inside the virtualenv  
-RUN python -m pip install --upgrade pip
+RUN python -m pip install  --upgrade pip
 RUN pip install pipenv
-RUN pipenv install  --system --deploy
+RUN pipenv install  --categories=${PIP_SECTION} --system --deploy
 
 
 
 FROM python:3.10-slim AS runtime
-
+ARG PIP_SECTION
 ENV PYROOT /opt/venv
 ENV PYTHONUSERBASE $PYROOT
 

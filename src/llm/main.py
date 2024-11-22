@@ -1,10 +1,17 @@
+import argparse
+import json
 import os
+from datetime import datetime
 from itertools import groupby
+from tempfile import NamedTemporaryFile
 from typing import List
 from unicodedata import normalize
 
-from shared.cloud_storage.cloud_storage_non_numpy import BackBlazeCloudStorageCSV
 from src.llm.generator import LLamaCppGeneratorComponent
+from src.shared.cloud_storage.cloud_storage_non_numpy import BackBlazeCloudStorageCSV
+from src.shared.logger import setup_logger
+
+logger = setup_logger("data_puller")
 
 
 def summarize_documents(data: List, generator: LLamaCppGeneratorComponent):
@@ -22,27 +29,35 @@ def summarize_documents(data: List, generator: LLamaCppGeneratorComponent):
 		content = "\n".join([news["content"] for news in news_data])
 		content = normalize("NFKD", content)
 		summary = generator.run(template_values={"content": content})
-		news_data = {"titles": titles, "urls": urls, "summary": summary}
-		summaries.append(news_data)
-		print(f" This is the summary for label {label}")
-		print(summary)
-		print(f"Here are the titles for label {label}")
-		print(10 * "*")
-		for title in titles:
-			print(title)
-		print(10 * "*")
-		return summaries
+		logger.info(f"Done summarizing the documents  {label}")
+		if summary:
+			news_data = {"titles": titles, "urls": urls, "summary": summary}
+			summaries.append(news_data)
+	return summaries
 
 
+parser = argparse.ArgumentParser()
+
+# this file should run only today
 if __name__ == "__main__":
-	bucket_name = os.getenv("BUCKET_NAME")
-	api_url = os.getenv("API_URL")
 	prompt = "You are a french news reporter"
 	cloud_storage = BackBlazeCloudStorageCSV(environment="local")
-	data = cloud_storage.read_file_as_list(
-		bucket_name="congonews-clusters", file_name="news-clusters-2023-08-18-to-2023-08-19.csv"
-	)
+	bucket_name = os.getenv("BUCKET_NAME")
+	api_url = os.getenv("API_URL")
+	today = datetime.now().strftime("%Y-%m-%d")
+	today_file_name = cloud_storage.generate_file_name(date=today)
+	parser.add_argument("-f", "--filename", type=str, default=today_file_name)
+	args = parser.parse_args()
+	data = cloud_storage.read_file_as_list(bucket_name=bucket_name, file_name=args.filename)
+	print(data[0])
 	llama_cpp_generator = LLamaCppGeneratorComponent(api_url=api_url, prompt=prompt)
 	assert llama_cpp_generator._ping_api()
 	summaries = summarize_documents(data, llama_cpp_generator)
-	cloud_storage.upload_file(bucket_name=bucket_name, file_name="tnesn", file_path="test")
+	with NamedTemporaryFile(delete=True, suffix=".json", mode="w+") as temp_file:
+		json.dump(summaries, temp_file, ensure_ascii=False)
+		cloud_storage.upload_file(
+			bucket_name=bucket_name,
+			file_name=f"summaries/news-summaries-{today}.json",
+			file_path=temp_file.name,
+			metadata={"dates": today},
+		)

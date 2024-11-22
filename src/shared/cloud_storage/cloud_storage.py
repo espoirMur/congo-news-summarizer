@@ -18,8 +18,7 @@ class BackBlazeCloudStorage(BackBlazeCloudStorageBase):
 	) -> None:
 		"""Save a dataframe to a cloud bucket."""
 		today = datetime.now().strftime("%Y-%m-%d")
-		date = kwargs.get("date", today)
-		file_name = f"news-clusters-{today}-to-{date}.csv"
+		file_name = self.generate_file_name(date=today)
 		with NamedTemporaryFile(delete=True, suffix=".csv") as temp_file:
 			data.to_csv(temp_file, sep="|")
 			self.upload_file(
@@ -28,7 +27,7 @@ class BackBlazeCloudStorage(BackBlazeCloudStorageBase):
 				file_name=file_name,
 				metadata=kwargs,
 			)
-			logger.info(f"Saved {date} news to the cloud bucket")
+			logger.info(f"Saved {file_name} news to the cloud bucket")
 			return file_name
 
 	def download_file_as_numpy_array(self, bucket_name: str, file_name: str) -> np.array:

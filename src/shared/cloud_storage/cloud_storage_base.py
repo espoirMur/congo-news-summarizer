@@ -1,5 +1,7 @@
 import os
+from datetime import datetime
 from pathlib import Path
+from typing import Tuple
 
 import b2sdk.v2 as back_blaze
 from b2sdk._internal.transfer.inbound.downloaded_file import DownloadedFile
@@ -13,10 +15,10 @@ class BackBlazeCloudStorageBase:
 	It will instantiate the cloud storage client and provide methods for uploading and downloading files
 	"""
 
-	def load_environment_variables(self, environment: str = "local") -> tuple[str, str]:
+	def load_environment_variables(self, environment: str = "local") -> Tuple[str, str]:
 		"""Load an environment variables and return them, raise a value error if one of them is empty."""
 		current_directory = Path.cwd()
-		env_file = current_directory.joinpath(f"env_{environment}")
+		env_file = current_directory.joinpath(f".env_{environment}")
 		load_dotenv(env_file)
 		application_key_id = os.getenv("BACK_BLAZE_KEY_ID")
 		application_key = os.getenv("BACK_BLAZE_APPLICATION_KEY")
@@ -50,3 +52,10 @@ class BackBlazeCloudStorageBase:
 		"""download the file from the bucket with the given name"""
 		bucket = self.get_bucket(bucket_name)
 		return bucket.download_file_by_name(file_name)
+
+	def generate_file_name(self, date: str = None) -> str:
+		today = datetime.now().strftime("%Y-%m-%d")
+		if not date:
+			date = today
+		file_name = f"news-clusters-{today}-to-{date}.csv"
+		return file_name
