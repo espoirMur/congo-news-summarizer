@@ -12,6 +12,10 @@ jobs:
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
+    
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+    
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
     - name: Log in to Docker Hub
@@ -19,6 +23,19 @@ jobs:
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and Push Generator
+      uses: docker/build-push-action@v6
+      with:
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/summarization-generator:latest
+          file: docker/Dockerfile-base
+          build-args: |
+            PIP_SECTION=generator-packages
+          context: .
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/summarization-generator:latest
+          cache-to: type=inline
+          platforms: linux/amd64,linux/arm64
 
     - name: Build and Push Clustering
       uses: docker/build-push-action@v6
