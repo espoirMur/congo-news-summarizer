@@ -20,19 +20,6 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and Push Generator
-      uses: docker/build-push-action@v6
-      with:
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/summarization-generator:latest
-          file: docker/Dockerfile-base
-          build-args: |
-            PIP_SECTION=generator-packages
-          context: .
-          cache-from: type=registry,ref=user/app:latest
-          cache-to: type=inline
-          platforms: linux/amd64,linux/arm64
-
     - name: Build and Push Clustering
       uses: docker/build-push-action@v6
       with:
@@ -42,7 +29,7 @@ jobs:
           build-args: |
             PIP_SECTION=clustering-packages
           context: .
-          cache-from: type=registry,ref=user/app:latest
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/summarization-clustering:latest
           cache-to: type=inline
           platforms: linux/amd64,linux/arm64
 
