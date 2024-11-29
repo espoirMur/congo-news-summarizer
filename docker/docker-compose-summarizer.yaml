@@ -1,6 +1,6 @@
 services:
   news-summarizer:
-    image: espymur/summarization-clustering:latest
+    image: summarization-clustering:latest
     tty: true
     volumes:
       - ${PWD}/models/dunzhang/stella_en_400M_v5:/home/summarizer/models/dunzhang/stella_en_400M_v5
