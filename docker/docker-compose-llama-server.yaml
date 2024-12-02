@@ -1,8 +1,6 @@
 services:
   llamacpp-server:
     image: ghcr.io/ggerganov/llama.cpp:server
-    ports:
-      - 8080:8080
     volumes:
       - $PWD/models:/models/
     environment:
