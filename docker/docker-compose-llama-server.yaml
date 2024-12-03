@@ -2,7 +2,7 @@ services:
   llamacpp-server:
     image: ghcr.io/ggerganov/llama.cpp:server
     volumes:
-      - $PWD/models:/models/
+      - $PWD/models:/models
     environment:
       # alternatively, you can use "LLAMA_ARG_MODEL_URL" to download the model
       LLAMA_ARG_MODEL: /models/Qwen/Qwen_1.5_8Q.gguf
