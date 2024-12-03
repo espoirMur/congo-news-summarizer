@@ -11,3 +11,4 @@
 - [] Redesign the whole application with database and run metrics
 - [] Work on Celery and architecture the application.
 - [] Build a server that serve the summaries as static files
+- [] Automate the gguf download

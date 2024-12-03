@@ -19,3 +19,8 @@ Have a script that will convert the model to
 
 
 https://medium.com/@ramanbazhanau/preparing-fastapi-for-production-a-comprehensive-guide-d167e693aa2b
+
+
+## Manged to run 
+
+
