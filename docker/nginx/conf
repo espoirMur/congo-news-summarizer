@@ -10,7 +10,7 @@ server {
         proxy_pass http://llamacpp-server;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header Host $host;
-        proxy_redirect off;
+        proxy_redirect http://llamacpp-server/ /;
         auth_basic "Restricted Content";
         auth_basic_user_file /etc/nginx/.htpasswd;
     }
