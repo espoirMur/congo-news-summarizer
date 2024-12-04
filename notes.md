@@ -28,3 +28,7 @@ https://medium.com/@ramanbazhanau/preparing-fastapi-for-production-a-comprehensi
 
  sudo sh -c "echo -n 'espy:' >>  docker/nginx/.htpasswd"
 sudo sh -c "openssl passwd -apr1 >>  docker/nginx/.htpasswd"
+
+
+
+Managed to deploy the model, need now to work on the summarization ochestration
