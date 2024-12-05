@@ -13,7 +13,12 @@ server {
         proxy_redirect http://llamacpp-server/ /;
         auth_basic "Restricted Content";
         auth_basic_user_file /etc/nginx/.htpasswd;
-        proxy_ignore_client_abort on
+        proxy_ignore_client_abort on;
     }
+
+     location /summaries/ {
+        proxy_pass https://s3.us-west-004.backblazeb2.com/congonews-clusters;
+        default_type "application/json";
+   }
 
 }

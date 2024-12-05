@@ -11,7 +11,7 @@ from src.llm.generator import LLamaCppGeneratorComponent
 from src.shared.cloud_storage.cloud_storage_non_numpy import BackBlazeCloudStorageCSV
 from src.shared.logger import setup_logger
 
-logger = setup_logger("data_puller")
+logger = setup_logger("summarizer_generative")
 
 
 def summarize_documents(data: List, generator: LLamaCppGeneratorComponent):
