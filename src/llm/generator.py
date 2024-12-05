@@ -3,6 +3,7 @@ from typing import Dict, List
 
 import requests
 from jinja2 import Template
+from requests.auth import HTTPBasicAuth
 
 from src.shared.logger import setup_logger
 
@@ -32,6 +33,7 @@ class LLamaCppGeneratorComponent:
 	) -> None:
 		self.api_url = api_url
 		self.prompt = prompt
+		self.auth_header = self.generate_authentication_header()
 
 	def generate_chat_input(
 		self, template_values: dict, prompt_template: str = SUMMARIZATION_PROMPT_TEMPLATE
@@ -86,11 +88,11 @@ class LLamaCppGeneratorComponent:
 				headers=headers,
 				data=json_data,
 				timeout=300,
+				auth=self.auth_header,
 			)
 			return response.json()["content"]
 		except requests.exceptions.RequestException as e:
-			logger.error(e)
-			return None
+			raise e
 
 	def run(
 		self, template_values: dict, prompt_template: str = SUMMARIZATION_PROMPT_TEMPLATE
@@ -104,7 +106,7 @@ class LLamaCppGeneratorComponent:
 	def _ping_api(self) -> bool:
 		"""Ping the Llamma.cpp api to check if it is up"""
 		try:
-			response = requests.get(f"{self.api_url}/health", timeout=20)
+			response = requests.get(f"{self.api_url}/health", timeout=20, auth=self.auth_header)
 			return response.status_code == 200 and response.json()["status"] == "ok"
 		except requests.exceptions.RequestException as e:
 			logger.error(e)
@@ -124,3 +126,7 @@ class LLamaCppGeneratorComponent:
 		chat_template = "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- messages[0]['content'] }}\n    {%- else %}\n        {{- 'You are Qwen, created by Alibaba Cloud. You are a helpful assistant.' }}\n    {%- endif %}\n    {{- \"\\n\\n# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0]['content'] + '<|im_end|>\\n' }}\n    {%- else %}\n        {{- '<|im_start|>system\\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- for message in messages %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) or (message.role == \"assistant\" and not message.tool_calls) %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role }}\n        {%- if message.content %}\n            {{- '\\n' + message.content }}\n        {%- endif %}\n        {%- for tool_call in message.tool_calls %}\n            {%- if tool_call.function is defined %}\n                {%- set tool_call = tool_call.function %}\n            {%- endif %}\n            {{- '\\n<tool_call>\\n{\"name\": \"' }}\n            {{- tool_call.name }}\n            {{- '\", \"arguments\": ' }}\n            {{- tool_call.arguments | tojson }}\n            {{- '}\\n</tool_call>' }}\n        {%- endfor %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if (loop.index0 == 0) or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n"
 		template = Template(chat_template)
 		return template.render(messages=messages, add_generation_prompt=add_generation_prompt)
+
+	def generate_authentication_header(self):
+		auth = HTTPBasicAuth("esp_py", "9874@Lama")
+		return auth
