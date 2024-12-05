@@ -45,18 +45,20 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 	cloud_storage = BackBlazeCloudStorageCSV(environment=args.environment)
 	today = datetime.now().strftime("%Y-%m-%d")
-	# cloud_storage.generate_file_name(date=today)
-	today_file_name = "news-clusters-2024-12-03-to-2024-12-03.csv"
-	bucket_name = os.getenv("BUCKET_NAME")
+	today_file_name = cloud_storage.generate_file_name(date=today)
+	download_bucket_name = os.getenv("DOWNLOAD_BUCKET_NAME")
+	upload_bucket_name = os.getenv("UPLOAD_BUCKET_NAME")
 	api_url = os.getenv("API_URL")
-	data = cloud_storage.read_file_as_list(bucket_name=bucket_name, file_name=today_file_name)
+	data = cloud_storage.read_file_as_list(
+		bucket_name=download_bucket_name, file_name=today_file_name
+	)
 	llama_cpp_generator = LLamaCppGeneratorComponent(api_url=api_url, prompt=prompt)
 	assert llama_cpp_generator._ping_api()
 	summaries = summarize_documents(data, llama_cpp_generator)
 	with NamedTemporaryFile(delete=True, suffix=".json", mode="w+") as temp_file:
 		json.dump(summaries, temp_file, ensure_ascii=False)
 		cloud_storage.upload_file(
-			bucket_name=bucket_name,
+			bucket_name=upload_bucket_name,
 			file_name=f"summaries/news-summaries-{today}.json",
 			file_path=temp_file.name,
 			metadata={"dates": today},

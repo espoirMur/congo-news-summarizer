@@ -21,6 +21,11 @@ services:
     depends_on: 
       - llamacpp-server
     entrypoint: ["python", "src/llm/main.py", "-e prod"]
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.clustering.schedule:  "0 15 23 * * *"
+      ofelia.job-exec.clustering.command: "python src/llm/main.py -e prod"
+
     environment:
       - API_URL=http://llamacpp-server:8000
   nginx:
@@ -31,3 +36,13 @@ services:
       dockerfile: Dockerfile-nginx
     ports: 
       - 80:80
+  
+  ofelia:
+    image: mcuadros/ofelia:latest
+    restart: "unless-stopped"
+    depends_on:
+      - news-summarizer-generative-model
+    command: daemon --docker -f label=com.docker.compose.project=${COMPOSE_PROJECT_NAME}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
