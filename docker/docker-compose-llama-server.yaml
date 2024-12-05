@@ -20,11 +20,10 @@ services:
       - ../.env_prod
     depends_on: 
       - llamacpp-server
-    entrypoint: ["python", "src/llm/main.py", "-e prod"]
     labels:
       ofelia.enabled: "true"
-      ofelia.job-exec.clustering.schedule:  "0 15 23 * * *"
-      ofelia.job-exec.clustering.command: "python src/llm/main.py -e prod"
+      ofelia.job-exec.generator.schedule:  "0 20 23 * * *"
+      ofelia.job-exec.generator.command: "python src/llm/main.py -e prod"
 
     environment:
       - API_URL=http://llamacpp-server:8000
