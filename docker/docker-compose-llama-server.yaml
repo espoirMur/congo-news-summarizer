@@ -22,7 +22,7 @@ services:
       - llamacpp-server
     entrypoint: ["python", "src/llm/main.py", "-e prod"]
     environment:
-      - API_URL=llamacpp-server:8000
+      - API_URL=http://llamacpp-server:8000
   nginx:
     depends_on: 
       - llamacpp-server

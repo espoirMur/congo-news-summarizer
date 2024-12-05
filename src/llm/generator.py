@@ -103,7 +103,7 @@ class LLamaCppGeneratorComponent:
 	def _ping_api(self) -> bool:
 		"""Ping the Llamma.cpp api to check if it is up"""
 		try:
-			response = requests.get(f"{self.api_url}/health", timeout=20, auth=self.auth_header)
+			response = requests.get(f"{self.api_url}/health", timeout=20)
 			return response.status_code == 200 and response.json()["status"] == "ok"
 		except requests.exceptions.RequestException as e:
 			logger.error(e)
