@@ -18,6 +18,7 @@ server {
         proxy_send_timeout 1800;
         send_timeout 1800;
         proxy_next_upstream off;
+        proxy_ignore_client_abort on
     }
 
 }
