@@ -5,7 +5,7 @@ services:
       - $PWD/models:/models
     environment:
       # alternatively, you can use "LLAMA_ARG_MODEL_URL" to download the model
-      LLAMA_ARG_MODEL: /models/Qwen/Qwen_1.5_8Q.gguf 
+      LLAMA_ARG_MODEL: /models/Qwen/Qwen_7B_5Q.gguf  
       LLAMA_ARG_CTX_SIZE: 4096
       LLAMA_ARG_N_PARALLEL: 4
       LLAMA_ARG_ENDPOINT_METRICS: 1
@@ -13,6 +13,16 @@ services:
       LLAMA_ARG_N_PREDICT: 512
     expose:
       - 8000
+  news-summarizer-generative-model:
+    image: espymur/summarization-generator:latest
+    tty: true
+    env_file:
+      - ../.env_prod
+    depends_on: 
+      - llamacpp-server
+    entrypoint: ["python", "src/llm/main.py", "-e prod"]
+    environment:
+      - API_URL=llamacpp-server:8000
   nginx:
     depends_on: 
       - llamacpp-server
