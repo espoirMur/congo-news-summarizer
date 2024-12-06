@@ -4,7 +4,7 @@ from tempfile import NamedTemporaryFile
 import numpy as np
 import pandas as pd
 
-from shared.cloud_storage.cloud_storage_base import BackBlazeCloudStorageBase
+from src.shared.cloud_storage.cloud_storage_base import BackBlazeCloudStorageBase
 from src.shared.logger import setup_logger
 
 logger = setup_logger("data_puller")

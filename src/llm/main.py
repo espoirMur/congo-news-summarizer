@@ -33,6 +33,7 @@ def summarize_documents(data: List, generator: LLamaCppGeneratorComponent):
 		if summary:
 			news_data = {"titles": titles, "urls": urls, "summary": summary}
 			summaries.append(news_data)
+	logger.info("Done summarizing all the documents")
 	return summaries
 
 
@@ -45,7 +46,7 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 	cloud_storage = BackBlazeCloudStorageCSV(environment=args.environment)
 	today = datetime.now().strftime("%Y-%m-%d")
-	today_file_name = cloud_storage.generate_file_name(date=today)
+	today_file_name = "news-clusters-2024-12-04-to-2024-12-04.csv"
 	download_bucket_name = os.getenv("DOWNLOAD_BUCKET_NAME")
 	upload_bucket_name = os.getenv("UPLOAD_BUCKET_NAME")
 	api_url = os.getenv("API_URL")
@@ -59,7 +60,7 @@ if __name__ == "__main__":
 		json.dump(summaries, temp_file, ensure_ascii=False)
 		cloud_storage.upload_file(
 			bucket_name=upload_bucket_name,
-			file_name=f"summaries/news-summaries-{today}.json",
+			file_name=f"summaries/{today}/news-summaries.json",
 			file_path=temp_file.name,
 			metadata={"dates": today},
 		)
