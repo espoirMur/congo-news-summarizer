@@ -8,7 +8,7 @@ services:
       - ../.env_prod
     labels:
       ofelia.enabled: "true"
-      ofelia.job-exec.summarizer.schedule:  "0 40 23 * * *"
+      ofelia.job-exec.summarizer.schedule:  "0 00 22 * * *"
       ofelia.job-exec.summarizer.command: "python src/summarizer/main.py -e prod -d 0"
 
   ofelia:
