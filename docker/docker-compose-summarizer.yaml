@@ -1,11 +1,11 @@
 services:
   news-summarizer:
-    image: summarization-clustering:latest
+    image: espymur/summarization-clustering:latest
     tty: true
     volumes:
       - ${PWD}/models/dunzhang/stella_en_400M_v5:/home/summarizer/models/dunzhang/stella_en_400M_v5
     env_file:
-      - ../../.env_prod
+      - ../.env_prod
     labels:
       ofelia.enabled: "true"
       ofelia.job-exec.summarizer.schedule:  "0 00 22 * * *"
