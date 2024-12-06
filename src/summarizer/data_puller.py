@@ -6,7 +6,7 @@ from urllib.parse import quote
 import pandas as pd
 from dotenv import load_dotenv
 
-from shared.cloud_storage.cloud_storage import BackBlazeCloudStorage
+from src.shared.cloud_storage.cloud_storage import BackBlazeCloudStorage
 from src.shared.database import execute_query, generate_database_connection
 from src.shared.logger import setup_logger
 
