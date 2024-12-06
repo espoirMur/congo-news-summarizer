@@ -3,12 +3,12 @@ services:
     image: espymur/summarization-clustering:latest
     tty: true
     volumes:
-      - ${PWD}/models/dunzhang/stella_en_400M_v5:/home/summarizer/models/dunzhang/stella_en_400M_v5
+      - ${PWD}/models/dunzhang/stella_en_400M_v5:/home/code/models/dunzhang/stella_en_400M_v5
     env_file:
       - ../.env_prod
     labels:
       ofelia.enabled: "true"
-      ofelia.job-exec.summarizer.schedule:  "0 25 23 * * *"
+      ofelia.job-exec.summarizer.schedule:  "0 40 23 * * *"
       ofelia.job-exec.summarizer.command: "python src/summarizer/main.py -e prod -d 0"
 
   ofelia:

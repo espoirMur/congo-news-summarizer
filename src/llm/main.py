@@ -3,7 +3,6 @@ import json
 import os
 from datetime import datetime
 from itertools import groupby
-from tempfile import NamedTemporaryFile
 from typing import List
 from unicodedata import normalize
 
@@ -56,11 +55,12 @@ if __name__ == "__main__":
 	llama_cpp_generator = LLamaCppGeneratorComponent(api_url=api_url, prompt=prompt)
 	assert llama_cpp_generator._ping_api()
 	summaries = summarize_documents(data, llama_cpp_generator)
-	with NamedTemporaryFile(delete=True, suffix=".json", mode="w+") as temp_file:
+
+	with open("news-summaries.json", "w") as temp_file:
 		json.dump(summaries, temp_file, ensure_ascii=False)
 		cloud_storage.upload_file(
 			bucket_name=upload_bucket_name,
 			file_name=f"summaries/{today}/news-summaries.json",
-			file_path=temp_file.name,
+			file_path="news-summaries.json",
 			metadata={"dates": today},
 		)
