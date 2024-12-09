@@ -7,7 +7,7 @@
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal",
-      "args": ["-e local", "-d 2"],
+      "args": ["-e local"],
       "envFile": "${workspaceFolder}/.env_local"
     }
   ]

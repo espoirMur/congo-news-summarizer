@@ -14,5 +14,5 @@ class BackBlazeCloudStorageCSV(BackBlazeCloudStorageBase):
 			delete=True, suffix=".csv", mode="r", encoding="utf-8"
 		) as temp_file:
 			documents.save_to(temp_file.name)
-			reader = csv_reader(temp_file, delimiter=",")
+			reader = csv_reader(temp_file, delimiter="|")
 			return list(reader)

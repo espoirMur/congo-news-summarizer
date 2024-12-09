@@ -15,6 +15,7 @@ services:
       - 8000
   news-summarizer-generative-model:
     image: espymur/summarization-generator:latest
+    pull_policy: always
     tty: true
     env_file:
       - ../.env_prod

@@ -1,6 +1,7 @@
 services:
   news-summarizer:
     image: espymur/summarization-clustering:latest
+    pull_policy: always
     tty: true
     volumes:
       - ${PWD}/models/dunzhang/stella_en_400M_v5:/home/code/models/dunzhang/stella_en_400M_v5
