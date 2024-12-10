@@ -53,14 +53,14 @@ if __name__ == "__main__":
 		bucket_name=download_bucket_name, file_name=today_file_name
 	)
 	llama_cpp_generator = LLamaCppGeneratorComponent(api_url=api_url, prompt=prompt)
-	assert llama_cpp_generator._ping_api()
+	assert llama_cpp_generator._ping_api(), "API is not up"
 	summaries = summarize_documents(data, llama_cpp_generator)
-
-	with open("news-summaries.json", "w") as temp_file:
-		json.dump(summaries, temp_file, ensure_ascii=False)
-		cloud_storage.upload_file(
-			bucket_name=upload_bucket_name,
-			file_name=f"summaries/{today}/news-summaries-test.json",
-			file_path="news-summaries.json",
-			metadata={"content_type": "application/json"},
-		)
+	local_file_name = f"news-summaries-{today}.json"
+	with open(local_file_name, "w") as temp_file:
+		json.dump(summaries, temp_file, ensure_ascii=False, indent=4)
+	cloud_storage.upload_file(
+		bucket_name=upload_bucket_name,
+		file_name=f"summaries/news-summaries-{today}.json",
+		file_path=local_file_name,
+		metadata={"content_type": "application/json"},
+	)
