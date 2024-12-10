@@ -45,7 +45,7 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 	cloud_storage = BackBlazeCloudStorageCSV(environment=args.environment)
 	today = datetime.now().strftime("%Y-%m-%d")
-	today_file_name = cloud_storage.generate_file_name(date=today)
+	today_file_name = "news-clusters-2024-12-09-to-2024-12-09.csv"
 	download_bucket_name = os.getenv("DOWNLOAD_BUCKET_NAME")
 	upload_bucket_name = os.getenv("UPLOAD_BUCKET_NAME")
 	api_url = os.getenv("API_URL")
