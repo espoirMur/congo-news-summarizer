@@ -7,13 +7,19 @@ from jinja2 import Template
 from src.shared.logger import setup_logger
 
 SUMMARIZATION_PROMPT_TEMPLATE = """
-Give a short summary 2 to 3 sentences in french of the following document:
+Give a title and a short summary 2 to 3 sentences in french of the following document:
 {{content}}
  Describes it in a style of a french new paper reporters.
 
 Don't summarize each document separately, the content in all the documents should be summarized.
 
-The summary should be in french not in English
+
+The answer should have the format:
+
+Titre:
+Résumé:
+
+The title and summary should be in french not in English.
 """
 
 logger = setup_logger("cluster_modeler")
