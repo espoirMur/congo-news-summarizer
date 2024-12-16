@@ -93,9 +93,13 @@ class LLamaCppGeneratorComponent:
 				data=json_data,
 				timeout=3000,
 			)
-			return response.json()["content"]
-		except requests.exceptions.RequestException as e:
-			raise e
+			response.raise_for_status()
+		except requests.exceptions.ConnectionError as err:
+			raise SystemExit(err)
+		except requests.exceptions.HTTPError as err:
+			raise SystemExit(err)
+
+		return response.json()["content"]
 
 	def run(
 		self, template_values: dict, prompt_template: str = SUMMARIZATION_PROMPT_TEMPLATE
@@ -103,7 +107,11 @@ class LLamaCppGeneratorComponent:
 		"""Generate response using the Llamma.cpp api"""
 		chat_input = self.generate_chat_input(template_values, prompt_template)
 		chat_tokens = self.apply_chat_template(messages=chat_input, add_generation_prompt=True)
-		response = self.generate_response(chat_tokens)
+		try:
+			response = self.generate_response(chat_tokens)
+		except Exception as e:
+			logger.error(e)
+			return False  # may be not a great idea
 		return response
 
 	def _ping_api(self) -> bool:
