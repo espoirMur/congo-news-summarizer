@@ -76,6 +76,7 @@ class LLamaCppGeneratorComponent:
 			"top_p": 0.90,
 			"stopped_eos": True,
 			"repeat_penalty": 1.05,
+			"cache_prompt": False,
 			"stop": [
 				"assistant",
 				"<|im_end|>",
