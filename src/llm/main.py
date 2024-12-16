@@ -42,25 +42,28 @@ parser = argparse.ArgumentParser()
 if __name__ == "__main__":
 	prompt = "You are a french news reporter"
 	parser.add_argument("-e", "--environment", default="dev")
+	parser.add_argument("-s", "--save_to_s3", default=False)
 	args = parser.parse_args()
 	cloud_storage = BackBlazeCloudStorageCSV(environment=args.environment)
 	today = datetime.now().strftime("%Y-%m-%d")
-	today_file_name = "news-clusters-2024-12-09-to-2024-12-09.csv"
+	today_file_name = "news-clusters-2024-12-15-to-2024-12-15.csv"
 	download_bucket_name = os.getenv("DOWNLOAD_BUCKET_NAME")
 	upload_bucket_name = os.getenv("UPLOAD_BUCKET_NAME")
 	api_url = os.getenv("API_URL")
 	data = cloud_storage.read_file_as_list(
 		bucket_name=download_bucket_name, file_name=today_file_name
 	)
+	logger.info("done downloading the document")
 	llama_cpp_generator = LLamaCppGeneratorComponent(api_url=api_url, prompt=prompt)
 	assert llama_cpp_generator._ping_api(), "API is not up"
 	summaries = summarize_documents(data, llama_cpp_generator)
 	local_file_name = f"news-summaries-{today}.json"
 	with open(local_file_name, "w") as temp_file:
 		json.dump(summaries, temp_file, ensure_ascii=False, indent=4)
-	cloud_storage.upload_file(
-		bucket_name=upload_bucket_name,
-		file_name=f"summaries/news-summaries-{today}.json",
-		file_path=local_file_name,
-		metadata={"content_type": "application/json"},
-	)
+	if args.save_to_s3:
+		cloud_storage.upload_file(
+			bucket_name=upload_bucket_name,
+			file_name=f"summaries/news-summaries-{today}.json",
+			file_path=local_file_name,
+			metadata={"content_type": "application/json"},
+		)

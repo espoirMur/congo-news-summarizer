@@ -35,3 +35,11 @@ Managed to deploy the model, need now to work on the summarization ochestration
 
 
 ### NEed to sort out the issue with news not updating correctly
+
+
+
+CPU information
+
+AMD EPYC 7282 16-Core Processor
+2.7 GHz
+Cache 512kb
