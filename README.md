@@ -8,9 +8,9 @@ In this project, I will try to build that news summarizer.
 
 ## Architecture
 
-The summarizer has 3 main components.
+The summarizer has four main components.
 
-A new collector,  cluster model and a Generative model.
+A new collector,  cluster model, a Generative model and finally a front-end.
 
 ### New Collector
 
@@ -20,6 +20,8 @@ This is build with scrappy scrappers, they scrape the news website and download 
 
 This is a machine learning model that pulls today news and runs a hierarchical clustering model on them. The output of this a a dataframe with news clusters. You can learn more on how I have implemented the clustering [here](./notebooks/new-summarizer-clustering.ipynb).
 
+Learn more on how to run [Readme.md](./src/summarizer/Readme.md)
+
 
 ### A generative model.
 
@@ -27,15 +29,11 @@ This component, start from the output of the clustering model and build a summar
 
 It use a self hosted Language model to generate the summary of the news.  I am working on a blog post that document all the process of building the generative model.
 
-### Technologies:
+#### Technologies:
 
-The Generative model is hosted using llama.cpp and run on ubuntu VPS for inference.
+The Generative model is  a Qwen1.5b model hosted using llama.cpp and run on ubuntu VPS for inference.
 
 
 ### A front end
 
 This is the final part, it will display the news summaries as a UI and user can interact with it.
-
-
-### 
-

@@ -16,9 +16,5 @@ server {
         proxy_ignore_client_abort on;
     }
 
-     location /summaries/ {
-        proxy_pass https://s3.us-west-004.backblazeb2.com/congonews-clusters;
-        default_type "application/json";
-   }
 
 }

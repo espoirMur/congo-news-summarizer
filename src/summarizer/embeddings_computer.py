@@ -7,7 +7,7 @@ from sentence_transformers import SentenceTransformer
 from src.shared.logger import setup_logger
 
 DEFAULT_TRANSFORMER_KWARGS = {
-	"trust_remote_code": True,
+	"trust_remote_code": True,  # this is a risky argument!
 	"device": "cpu",
 	"config_kwargs": {"use_memory_efficient_attention": False, "unpad_inputs": False},
 }

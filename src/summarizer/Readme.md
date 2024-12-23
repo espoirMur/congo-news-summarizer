@@ -1,22 +1,47 @@
 
+## Summarizer
+
+This is the readme for the new summarizer application.
+
+## How to Run it?
 
 
-### Build the Docker Image.
+### Prerequisites.
 
-` docker build -t espymur/summarization:dev -f deployment/docker-files/Dockerfile-base --build-arg PIP_SECTION=news-summarizer --build-arg COMPONENT_NAME=summarizer --build-arg COMPONENT_PATH=src/summarizer .`
+Before running make sure you have Python and Docker Installed in Your machine.
 
-
-Run it with 
-`docker run -v $(pwd)/src:/app/src --env-file .env_prod espymur/summarization:dev python src/summarizer/main.py -e prod -st b2 -d 7`
+You can install [python]() from this link and docker from [this one]().
 
 
+### Download the Embedding Model.
 
+Create a virtual environment and install transformer inside it.
 
-## Before installing the model
-
-Run the following script to install the model.
+Then run the following script to  download the embedding model locally.
 
 `python scripts/download_model.py --model_name_or_path dunzhang/stella_en_400M_v5 --output_dir models`
 
 
-Make sure you have the transformer model installed in the application
+## Generate Database credentials.
+
+You need to connect to the database to download the news articles. 
+
+`cp .env_sample .env_local`
+
+Then reach out to me directly I will provide you with the credentials needed to run this application.
+
+
+### Build the Docker Image.
+
+After you have downloaded the embedding model, you can build the container using the following code.
+
+` docker build -t espymur/summarization-clustering:latest -f docker/Dockerfile-base --build-arg PIP_SECTION=clustering-packages`
+
+
+Run it with 
+`docker run --env-file .env_local -v $(pwd)/models/dunzhang/stella_en_400M_v5:/home/code/models/dunzhang/stella_en_400M_v5 espymur/summarization-clustering:latest python  src/summarizer/main.py -e local -d 1`
+
+
+
+
+

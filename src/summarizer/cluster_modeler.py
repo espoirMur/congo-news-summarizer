@@ -44,6 +44,9 @@ class HierarchicalClusterModeler:
 		best_k = 0
 		for k in np.arange(0.1, 0.4, 0.01):
 			labels = fcluster(merging, k, criterion="distance")
+			if np.unique(labels).shape[0] < 2 or np.unique(labels).shape[0] >= X.shape[0] - 1:
+				# to avoid the case where the number of clusters is less than 2 or more than the number of documents
+				continue
 			score = silhouette_score(X, labels)
 			if score > max_shilouette:
 				max_shilouette = score

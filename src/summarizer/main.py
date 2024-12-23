@@ -4,9 +4,12 @@ import argparse
 from datetime import datetime, timedelta
 
 from src.shared.cloud_storage.cloud_storage import BackBlazeCloudStorage
+from src.shared.logger import setup_logger
 from src.summarizer.cluster_modeler import HierarchicalClusterModeler
 from src.summarizer.data_puller import DataPuller
 from src.summarizer.embeddings_computer import EmbeddingsComputer
+
+logger = setup_logger("summarizer_clustering_main")
 
 parser = argparse.ArgumentParser(prog="new summarizer", description="a news summarizer")
 if __name__ == "__main__":
@@ -32,4 +35,4 @@ if __name__ == "__main__":
 
 	cloud_storage = BackBlazeCloudStorage(environment=environment)
 	file_name = cloud_storage.save_df_to_blackbaze_bucket(important_news_df, date=date)
-	print("this is the filename", file_name)
+	logger.info(f"this is the filename {file_name}")

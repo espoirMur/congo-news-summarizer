@@ -28,7 +28,7 @@ RUN pipenv install  --categories=${PIP_SECTION} --system --deploy
 
 
 
-FROM --platform=linux/amd64 python:3.10-slim AS runtime
+FROM python:3.10-slim AS runtime
 ARG PIP_SECTION
 ENV PYROOT /opt/venv
 ENV PYTHONUSERBASE $PYROOT

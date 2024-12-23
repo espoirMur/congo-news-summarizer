@@ -17,8 +17,8 @@ class BackBlazeCloudStorage(BackBlazeCloudStorageBase):
 		self, data: pd.DataFrame, bucket_name: str = BUCKET_NAME, **kwargs
 	) -> None:
 		"""Save a dataframe to a cloud bucket."""
-		today = datetime.now().strftime("%Y-%m-%d")
-		file_name = self.generate_file_name(date=today)
+		date = kwargs.get("date", datetime.now().strftime("%Y-%m-%d"))
+		file_name = self.generate_file_name(date=date)
 		with NamedTemporaryFile(delete=True, suffix=".csv") as temp_file:
 			data.to_csv(temp_file, sep="|")
 			self.upload_file(
