@@ -49,7 +49,7 @@ class DataPuller:
 		}
 
 	def read_data(self) -> pd.DataFrame:
-		"""Read the data from the database and return the pnadas dataframe of the data."""
+		"""Read the data from the database and return the pandas dataframe of the data."""
 
 		database_credentials = self.load_database_credentials()
 		connection = generate_database_connection(database_credentials)
@@ -79,7 +79,7 @@ class DataPuller:
 
 	def run(self) -> pd.DataFrame:
 		"""
-		read the data and save it to te local bucket and return the path of the file from the bucket
+		Read the data from the database and return the data.
 		"""
 		news_df = self.read_data()
 		logger.info("done reading the data")
