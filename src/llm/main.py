@@ -1,7 +1,7 @@
 import argparse
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import groupby
 from typing import List
 from unicodedata import normalize
@@ -43,10 +43,15 @@ if __name__ == "__main__":
 	prompt = "You are a french news reporter"
 	parser.add_argument("-e", "--environment", default="dev")
 	parser.add_argument("-s", "--save_to_s3", default=False)
+	parser.add_argument("-f", "--file_name", default=None)
+	parser.add_argument("-d", "--day_ago", default=0, type=int)
 	args = parser.parse_args()
 	cloud_storage = BackBlazeCloudStorageCSV(environment=args.environment)
-	today = datetime.now().strftime("%Y-%m-%d")
-	today_file_name = cloud_storage.generate_file_name(date=today)
+	date = (datetime.now() - timedelta(days=args.day_ago)).strftime("%Y-%m-%d")
+	if args.file_name:
+		today_file_name = args.file_name
+	else:
+		today_file_name = cloud_storage.generate_file_name(date=date)
 	download_bucket_name = os.getenv("DOWNLOAD_BUCKET_NAME")
 	upload_bucket_name = os.getenv("UPLOAD_BUCKET_NAME")
 	api_url = os.getenv("API_URL")
@@ -57,13 +62,14 @@ if __name__ == "__main__":
 	llama_cpp_generator = LLamaCppGeneratorComponent(api_url=api_url, prompt=prompt)
 	assert llama_cpp_generator._ping_api(), "API is not up"
 	summaries = summarize_documents(data, llama_cpp_generator)
-	local_file_name = f"news-summaries-{today}.json"
+	local_file_name = f"news-summaries-{date}.json"
 	with open(local_file_name, "w") as temp_file:
 		json.dump(summaries, temp_file, ensure_ascii=False, indent=4)
 	if args.save_to_s3:
 		cloud_storage.upload_file(
 			bucket_name=upload_bucket_name,
-			file_name=f"summaries/news-summaries-{today}.json",
+			file_name=f"summaries/news-summaries-{date}.json",
 			file_path=local_file_name,
 			metadata={"content_type": "application/json"},
 		)
+		logger.info("done uploading the document")
