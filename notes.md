@@ -43,3 +43,12 @@ CPU information
 AMD EPYC 7282 16-Core Processor
 2.7 GHz
 Cache 512kb
+
+
+How to run flyte on the UI
+https://github.com/davidmirror-ops/flyte-the-hard-way/blob/main/docs/on-premises/single-node/003-ingress-tls.md
+
+
+### Notes
+
+As I have written the workflow, now the next step should be checking making it work and finish the ochestration

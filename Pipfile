@@ -30,3 +30,6 @@ notebook = "==7.2.2"
 pre-commit = "==4.0.1"
 ruff = "==0.7.3"
 nbstripout = "==0.8.1"
+
+[ochestration-packages]
+flytekit = "==1.14.2"
