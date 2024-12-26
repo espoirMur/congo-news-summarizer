@@ -52,3 +52,5 @@ https://github.com/davidmirror-ops/flyte-the-hard-way/blob/main/docs/on-premises
 ### Notes
 
 As I have written the workflow, now the next step should be checking making it work and finish the ochestration
+
+kubectl logs abvkww49dppvwqvrkp5s-n0-0  -n flytesnacks-development

@@ -19,11 +19,16 @@ torch = {version = "==2.5.1", index = "pytorch"}
 sentence-transformers = "==3.3.1"
 numpy = "==2.2.0"
 scikit-learn = "==1.6.0"
+flytekit = "==1.14.2"
+protobuf = "==4.25.5"
+kubernetes = "==31.0.0"
 
 [generator-packages]
 b2sdk= "==2.5.0"
 python-dotenv = "==1.0.1"
 Jinja2 = "==3.1.4"
+flytekit = "==1.14.2"
+protobuf = "==4.25.5"
 
 [dev-packages]
 notebook = "==7.2.2"

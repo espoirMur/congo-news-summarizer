@@ -1,39 +1,174 @@
-configuration:
-  database:
-    username: flyte
-    host: postgres.flyte.svc.cluster.local
-    dbname: flyte
-  storage:
-    type: minio
-    metadataContainer: flyte #This is the default bucket created with Minio. Controlled by the MINIO_DEFAULT_BUCKETS env var in the local-flyte-resources.yaml manifest
-    userDataContainer: flyte
-    provider: s3
-    providerConfig:
-      s3:
-        authType: "accesskey"
-        endpoint: "http://minio.flyte.svc.cluster.local:9000"
-        accessKey: "minio"
-        secretKey: "miniostorage" #If you need to change this parameters, refer to the local-flyte-resources.yaml manifest and adjust the MINIO_ROOT_PASSWORD env var
-        disableSSL: "true"
-        secure: "false"
-        v2Signing: "true"
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: flyte
+  labels:
+    name: flyte
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgresql-pvc
+  namespace: flyte
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
 
-  inlineSecretRef: flyte-binary-inline-config-secret
-  inline:
-    plugins:
-      k8s:
-        inject-finalizer: true
-        default-env-vars:
-          - FLYTE_AWS_ENDPOINT: "http://minio.flyte.svc.cluster.local:9000"
-          - FLYTE_AWS_ACCESS_KEY_ID: "minio"
-          - FLYTE_AWS_SECRET_ACCESS_KEY: "miniostorage" #Use the same value as the MINIO_ROOT_PASSWORD
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minio-pvc
+  namespace: flyte
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
 
-    task_resources:
-      defaults:
-        cpu: 100m
-        memory: 500Mi #change default requested resources and limits to fit your needs
-      limits:
-        memory: 2Gi
-
-serviceAccount:
-  create: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: flyte
+  labels: 
+    app.kubernetes.io/name: postgres
+spec:
+  type: NodePort
+  ports:
+  - name: postgres
+    port: 5432
+    nodePort: 30089
+    protocol: TCP
+    targetPort: postgres
+  selector: 
+    app.kubernetes.io/name: postgres
+  
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: flyte
+  labels: 
+    app.kubernetes.io/name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels: 
+      app.kubernetes.io/name: postgres
+  template:
+    metadata:
+      labels: 
+        app.kubernetes.io/name: postgres
+    spec:
+      containers:
+      - image: "ecr.flyte.org/ubuntu/postgres:13-21.04_beta"
+        imagePullPolicy: "IfNotPresent"
+        name: postgres
+        env:
+        - name: POSTGRES_PASSWORD
+          value: postgres #Change it to a different value if needed
+        - name: POSTGRES_USER
+          value: flyte
+        - name: POSTGRES_DB
+          value: flyte
+        ports:
+        - containerPort: 5432
+          name: postgres
+        resources: 
+          limits:
+            cpu: 1000m
+            memory: 512Mi
+          requests:
+            cpu: 10m
+            memory: 128Mi
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgresql-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+  namespace: flyte
+  labels: 
+    app.kubernetes.io/name: minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels: 
+      app.kubernetes.io/name: minio
+  template:
+    metadata:
+      labels: 
+        app.kubernetes.io/name: minio
+    spec:
+      securityContext:
+        fsGroup: 1001 # https://github.com/bitnami/containers/tree/5ea894be67b97fac6adda4a5bcce5703cbd443c7/bitnami/minio#persisting-your-database
+      containers:
+      - image: "bitnami/minio:2023.7.18-debian-11-r2"
+        imagePullPolicy: "IfNotPresent"
+        name: minio
+        env:
+          # change the following values if needed. Make sure to apply these changes also to the corresponding fields in the local-values.yaml file
+          # https://github.com/bitnami/containers/blob/5ea894be67b97fac6adda4a5bcce5703cbd443c7/bitnami/minio/README.md#customizable-environment-variables
+          - name: MINIO_ROOT_USER
+            value: minio 
+          - name: MINIO_ROOT_PASSWORD
+            value: miniostorage
+          - name: MINIO_DEFAULT_BUCKETS
+            value: flyte
+          - name: MINIO_DATA_DIR
+            value: "/data"
+        ports:
+        - containerPort: 9000
+          name: minio
+        - containerPort: 9001
+          name: minio-console
+        resources: 
+          limits:
+            cpu: 200m
+            memory: 512Mi
+          requests:
+            cpu: 10m
+            memory: 128Mi
+        volumeMounts:
+        - name: minio-storage
+          mountPath: /data
+      volumes:
+      - name: minio-storage
+        persistentVolumeClaim:
+          claimName: minio-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+  namespace: flyte
+  labels: 
+    app.kubernetes.io/name: minio
+spec:
+  type: NodePort
+  ports:
+  - name: minio
+    nodePort: 30084
+    port: 9000
+    protocol: TCP
+    targetPort: minio
+  - name: minio-console
+    nodePort: 30088
+    port: 9001
+    protocol: TCP
+    targetPort: minio-console
+  selector: 
+    app.kubernetes.io/name: minio

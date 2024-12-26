@@ -51,3 +51,4 @@ WORKDIR ${WORKING_DIR}
 RUN chown -R es.py:es.py ${WORKING_DIR}
 RUN chmod -R 755 ${WORKING_DIR}
 USER es.py
+ENV FLYTE_INTERNAL_IMAGE=ghcr.io/flyteorg/flytekit:py3.10-1.14.2
