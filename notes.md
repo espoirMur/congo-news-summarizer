@@ -54,3 +54,26 @@ https://github.com/davidmirror-ops/flyte-the-hard-way/blob/main/docs/on-premises
 As I have written the workflow, now the next step should be checking making it work and finish the ochestration
 
 kubectl logs abvkww49dppvwqvrkp5s-n0-0  -n flytesnacks-development
+
+https://gist.github.com/ruanbekker/bb62d7e2a77493497a2acbc3d0a649d3
+
+
+kubectl create secret -n <project>-<domain> generic user-info --from-literal=user_secret=mysecret
+kubectl create secret -n <project>-<domain>  generic credentials --from-env-file=.test-secret
+
+
+` kubectl create secret -n flytesnacks-development generic database-credentials --from-env-file=.env_db`
+
+
+database_secret_request = [
+    Secret(key="USER", group="postgres",
+           mount_requirement=Secret.MountType.ENV_VAR,),
+    Secret(key="PASSWORD", group="postgres",
+           mount_requirement=Secret.MountType.ENV_VAR,),
+    Secret(key="HOST", group="postgres",
+           mount_requirement=Secret.MountType.ENV_VAR,),
+    Secret(key="PORT", group="postgres",
+           mount_requirement=Secret.MountType.ENV_VAR,),
+    Secret(key="DB", group="postgres",
+           mount_requirement=Secret.MountType.ENV_VAR,),
+]

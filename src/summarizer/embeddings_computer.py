@@ -17,21 +17,16 @@ logger = setup_logger("cluster_modeler")
 class EmbeddingsComputer:
 	"""class that compute the document embedding"""
 
-	def __init__(self, embedding_model_id: str) -> None:
-		self.embedding_model_id = embedding_model_id
-		current_directory = Path.cwd()
-		self.current_directory = current_directory
+	def __init__(self, embedding_model_path: str | Path) -> None:
+		self.embedding_model_path = embedding_model_path
 		self.sentence_transformer_model = self.init_sentence_transformer()
 
 	def init_sentence_transformer(
 		self, transformer_kwargs: dict = DEFAULT_TRANSFORMER_KWARGS
 	) -> SentenceTransformer:
 		"""Initialize the sentence transformer model"""
-
-		embedding_model_path = self.current_directory.joinpath("models", self.embedding_model_id)
-		model_path = self.current_directory.joinpath(self.embedding_model_id)
-		transformer_kwargs["cache_folder"] = model_path
-		transformer_kwargs["model_name_or_path"] = embedding_model_path.__str__()
+		transformer_kwargs["cache_folder"] = self.embedding_model_path
+		transformer_kwargs["model_name_or_path"] = self.embedding_model_path
 		sentence_transformer_model = SentenceTransformer(**transformer_kwargs)
 		return sentence_transformer_model
 
