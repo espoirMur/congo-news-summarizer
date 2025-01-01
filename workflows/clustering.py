@@ -3,7 +3,7 @@ from typing import List, Optional
 
 import numpy as np
 import pandas as pd
-from flytekit import FlyteDirectory, task, workflow
+from flytekit import FlyteDirectory, Resources, task, workflow
 from flytekit.core.pod_template import PodTemplate
 from kubernetes.client.models import (
 	V1Container,
@@ -48,6 +48,33 @@ database_env_variables = [
 	),
 ]
 
+cloud_storage_env_variables = [
+	V1EnvVar(
+		name="BACK_BLAZE_APPLICATION_KEY",
+		value_from=V1EnvVarSource(
+			secret_key_ref=V1SecretKeySelector(
+				name="cloud-storage-credentials", key="BACK_BLAZE_APPLICATION_KEY"
+			)
+		),
+	),
+	V1EnvVar(
+		name="BACK_BLAZE_KEYNAME",
+		value_from=V1EnvVarSource(
+			secret_key_ref=V1SecretKeySelector(
+				name="cloud-storage-credentials", key="BACK_BLAZE_KEYNAME"
+			)
+		),
+	),
+	V1EnvVar(
+		name="BACK_BLAZE_KEY_ID",
+		value_from=V1EnvVarSource(
+			secret_key_ref=V1SecretKeySelector(
+				name="cloud-storage-credentials", key="BACK_BLAZE_KEY_ID"
+			)
+		),
+	),
+]
+
 # Create a function to create this with needed environment variables
 
 
@@ -70,7 +97,7 @@ def build_pod_spec(
 
 
 data_puller_pod_template = PodTemplate(
-	primary_container_name="primary",
+	primary_container_name="data-puller",
 	pod_spec=build_pod_spec(
 		pod_name="data-puller",
 		container_name="data-puller",
@@ -80,12 +107,22 @@ data_puller_pod_template = PodTemplate(
 )
 
 embedding_model_pod_template = PodTemplate(
-	primary_container_name="primary",
+	primary_container_name="embedding-model",
 	pod_spec=build_pod_spec(
 		pod_name="embedding-model",
 		container_image=clustering_container_name,
 		container_name="embedding-model",
 		env_variables=None,
+	),
+)
+
+save_data_pod_template = PodTemplate(
+	primary_container_name="save-data",
+	pod_spec=build_pod_spec(
+		pod_name="save-data",
+		container_image=clustering_container_name,
+		container_name="save-data",
+		env_variables=cloud_storage_env_variables,
 	),
 )
 
@@ -107,7 +144,11 @@ def pull_data(environment: str, date: str) -> pd.DataFrame:
 	return today_news_data
 
 
-@task(pod_template=embedding_model_pod_template)
+@task(
+	pod_template=embedding_model_pod_template,
+	requests=Resources(cpu="1", mem="2Gi"),
+	limits=Resources(cpu="1", mem="2Gi"),
+)
 def compute_embeddings(embedding_model_path: FlyteDirectory, new_data: pd.DataFrame) -> np.array:
 	"""compute embeddings for the data and save it as local file"""
 	from src.summarizer.embeddings_computer import EmbeddingsComputer
@@ -132,7 +173,7 @@ def cluster_data(embedded_documents: np.array, new_data: pd.DataFrame) -> pd.Dat
 	return important_news_df
 
 
-@task(container_image=clustering_container_name)
+@task(pod_template=save_data_pod_template)
 def save_data(environment: str, important_news_df: pd.DataFrame, date: str) -> str:
 	"""save the data to a cloud storage"""
 	from src.shared.cloud_storage.cloud_storage import BackBlazeCloudStorage
@@ -144,12 +185,13 @@ def save_data(environment: str, important_news_df: pd.DataFrame, date: str) -> s
 
 @workflow
 def clustering_pipeline(
-	environment: str, days_ago: int = 0, embedding_model_path: str = "dunzhang/stella_en_400M_v5"
+	environment: str,
+	days_ago: int = 0,
 ) -> str:
 	"""This is the end to end clustering pipeline"""
 	date = generate_date(days_ago=days_ago)
 	new_data = pull_data(environment=environment, date=date)
-	input_directory = FlyteDirectory("s3://flyte/models/{embedding_model_path}")
+	input_directory = FlyteDirectory("s3://flyte/stella_en_400M_v5")
 	embedded_documents = compute_embeddings(embedding_model_path=input_directory, new_data=new_data)
 	important_news_df = cluster_data(embedded_documents=embedded_documents, new_data=new_data)
 	data_path = save_data(environment=environment, important_news_df=important_news_df, date=date)
