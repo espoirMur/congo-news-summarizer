@@ -14,6 +14,7 @@ from kubernetes.client.models import (
 )
 
 clustering_container_name = "espymur/summarization-clustering:flyte-latest-2"
+generator_container_name = "espymur/summarization-generator:dev"
 
 database_env_variables = [
 	V1EnvVar(
@@ -126,15 +127,25 @@ save_data_pod_template = PodTemplate(
 	),
 )
 
+generator_pod_template = PodTemplate(
+	primary_container_name="generator",
+	pod_spec=build_pod_spec(
+		pod_name="generator",
+		container_image=generator_container_name,
+		container_name="generator",
+		env_variables=None,
+	),
+)
 
-@task(container_image=clustering_container_name)
+
+@task(container_image=clustering_container_name, cache=True, cache_version="1.0")
 def generate_date(days_ago: int) -> str:
 	"""generate the date for the data pull"""
 	date = (datetime.now() - timedelta(days=days_ago)).strftime("%Y-%m-%d")
 	return date
 
 
-@task(pod_template=data_puller_pod_template)
+@task(pod_template=data_puller_pod_template, cache=True, cache_version="1.0")
 def pull_data(environment: str, date: str) -> pd.DataFrame:
 	"""load data from the database and save it  as local file"""
 	from src.summarizer.data_puller import DataPuller
@@ -148,6 +159,8 @@ def pull_data(environment: str, date: str) -> pd.DataFrame:
 	pod_template=embedding_model_pod_template,
 	requests=Resources(cpu="1", mem="2Gi"),
 	limits=Resources(cpu="1", mem="2Gi"),
+	cache=True,
+	cache_version="1.0",
 )
 def compute_embeddings(embedding_model_path: FlyteDirectory, new_data: pd.DataFrame) -> np.array:
 	"""compute embeddings for the data and save it as local file"""
@@ -161,7 +174,7 @@ def compute_embeddings(embedding_model_path: FlyteDirectory, new_data: pd.DataFr
 	return embedded_documents
 
 
-@task(container_image=clustering_container_name)
+@task(container_image=clustering_container_name, cache=True, cache_version="1.0")
 def cluster_data(embedded_documents: np.array, new_data: pd.DataFrame) -> pd.DataFrame:
 	"""cluster the data and save it as local file"""
 	from src.summarizer.cluster_modeler import HierarchicalClusterModeler
@@ -173,7 +186,7 @@ def cluster_data(embedded_documents: np.array, new_data: pd.DataFrame) -> pd.Dat
 	return important_news_df
 
 
-@task(pod_template=save_data_pod_template)
+@task(pod_template=save_data_pod_template, cache=True, cache_version="1.0")
 def save_data(environment: str, important_news_df: pd.DataFrame, date: str) -> str:
 	"""save the data to a cloud storage"""
 	from src.shared.cloud_storage.cloud_storage import BackBlazeCloudStorage
@@ -183,10 +196,47 @@ def save_data(environment: str, important_news_df: pd.DataFrame, date: str) -> s
 	return file_name
 
 
+# TODO: this should go to the generator file
+
+
+@task(pod_template=generator_pod_template, cache=True, cache_version="1.0")
+def generate_summary(news_data: pd.DataFrame, api_url: str) -> List[dict]:
+	"""generate a summary of the news"""
+	from src.llm.generator import LLamaCppGeneratorComponent
+
+	prompt = "You are a french news reporter"
+	llama_cpp_generator = LLamaCppGeneratorComponent(api_url=api_url, prompt=prompt)
+	summaries = llama_cpp_generator.summarize_documents(news_data)
+	return summaries
+
+
+@task(pod_template=save_data_pod_template, cache=True, cache_version="1.0")
+def save_summaries(environment: str, summaries: List[dict], date: str) -> str:
+	"""save the summaries to a cloud storage"""
+	import json
+
+	from src.shared.cloud_storage.cloud_storage import BackBlazeCloudStorage
+
+	cloud_storage = BackBlazeCloudStorage(environment=environment)
+	upload_bucket_name = "congo-news-summaries"
+	local_file_name = f"news-summaries-{date}.json"
+	with open(local_file_name, "w") as temp_file:
+		json.dump(summaries, temp_file, ensure_ascii=False, indent=4)
+	file_name = cloud_storage.upload_file(
+		bucket_name=upload_bucket_name,
+		file_name=f"summaries/news-summaries-{date}.json",
+		file_path=local_file_name,
+		metadata={"content_type": "application/json"},
+	)
+
+	return file_name
+
+
 @workflow
 def clustering_pipeline(
 	environment: str,
 	days_ago: int = 0,
+	api_url: str = "http://host.docker.internal:8001",
 ) -> str:
 	"""This is the end to end clustering pipeline"""
 	date = generate_date(days_ago=days_ago)
@@ -194,8 +244,9 @@ def clustering_pipeline(
 	input_directory = FlyteDirectory("s3://flyte/stella_en_400M_v5")
 	embedded_documents = compute_embeddings(embedding_model_path=input_directory, new_data=new_data)
 	important_news_df = cluster_data(embedded_documents=embedded_documents, new_data=new_data)
-	data_path = save_data(environment=environment, important_news_df=important_news_df, date=date)
-	return data_path
+	summaries = generate_summary(news_data=important_news_df, api_url=api_url)
+	summary_file_name = save_summaries(environment=environment, summaries=summaries, date=date)
+	return summary_file_name
 
 
 if __name__ == "__main__":

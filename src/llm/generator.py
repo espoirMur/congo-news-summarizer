@@ -1,8 +1,8 @@
 import json
-from itertools import groupby
 from typing import Dict, List
 from unicodedata import normalize
 
+import pandas as pd
 import requests
 from jinja2 import Template
 
@@ -141,25 +141,20 @@ class LLamaCppGeneratorComponent:
 		template = Template(chat_template)
 		return template.render(messages=messages, add_generation_prompt=add_generation_prompt)
 
-	def summarize_documents(self, data: List):
-		"""Summarize the documents in the list of data"""
+	def summarize_documents(self, data: pd.DataFrame) -> List[Dict]:
+		"""
+		From the news summaries a dataframe, summarize the content of the news articles
+		"""
 		summaries = []
-
-		def sort_function(x):
-			return x["labels"]
-
-		sorted_data = sorted(data, key=sort_function)
-		grouped_data = groupby(sorted_data, key=sort_function)
+		grouped_data = data.groupby("labels")
 		for label, group in grouped_data:
-			news_data = list(group)
-			titles = [news["title"] for news in news_data]
-			urls = [news["url"] for news in news_data]
-			content = "\n".join([news["content"] for news in news_data])
+			titles = group["title"].tolist()
+			urls = group["url"].tolist()
+			content = group["content"].str.cat(sep="\n")
 			content = normalize("NFKD", content)
 			summary = self.run(template_values={"content": content})
-			logger.info(f"Done summarizing the documents  {label}")
+			logger.info(f"done summarizing cluster {label}")
 			if summary:
 				news_data = {"titles": titles, "urls": urls, "summary": summary}
 				summaries.append(news_data)
-		logger.info("Done summarizing all the documents")
 		return summaries
