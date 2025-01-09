@@ -36,19 +36,12 @@ def main():
     # Parse the arguments
     args = parser.parse_args()
 
-    # Access the --environment argument
-    environment = args.environment
+    # Access the --environment argument | Should be either 'local' or 'production'
+    environment = args.environment 
 
     # Logic based on the environment value
-    if environment == 'development':
-        print('Tweeted successfully !')
-
-    elif environment == 'production':
-        client = TwitterClient()
-        client.tweet_all(test_tweets)
-
-    else:
-        print(f"Unknown environment: {environment}")
+    client = TwitterClient()
+    client.tweet_all(test_tweets,env=environment)
 
 if __name__ == "__main__":
     main()

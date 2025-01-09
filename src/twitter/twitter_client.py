@@ -1,12 +1,19 @@
-from typing import Tuple, Dict, List
+from typing import Dict, TypedDict, List, Literal
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 import tweepy
 
+class TweetDict(TypedDict):
+    titles: List[str]
+    urls: List[str]
+    summary: str
+
+ExecutionEnvType = Literal['local','production']
+
 class TwitterClient:
 
-    def load_environment_variables(self, environment: str = "local") -> Tuple[str, str]:
+    def load_environment_variables(self, environment: str = "local"):
         """Load an environment variables and return them, raise a value error if one of them is empty."""
 
         # Get a specific ENV file
@@ -21,52 +28,64 @@ class TwitterClient:
         access_token_secret = os.getenv('TWITTER_ACCESS_SECRET')
         bearer_token=os.getenv('TWITTER_BEARER_TOKEN')
 
-        env_vars = (
-            consumer_secret,
-            consumer_key,
-            access_token,
-            access_token_secret,
-            bearer_token,
-        )
+        env_vars = {
+            "consumer_secret": consumer_secret,
+            "consumer_key" : consumer_key,
+            "access_token" : access_token,
+            "access_token_secret" : access_token_secret,
+            "bearer_token" : bearer_token,
+        }
 
-        if None in env_vars:
+        if None in env_vars.values():
             raise ValueError("There's an environnement variable missing !")
         
         return env_vars
     
     def init_client(self):
+        """
+            Instantiates the client to consume the API and returns it
+        """
 
-        consumer_key,consumer_secret,access_token,access_token_secret, bearer_token, = self.load_environment_variables()
+        env_vars = self.load_environment_variables()
 
         client = tweepy.Client(
-            consumer_key=consumer_key,
-            consumer_secret=consumer_secret,
-            access_token=access_token,
-            access_token_secret=access_token_secret,
-            bearer_token=bearer_token
+            consumer_key=env_vars['consumer_key'],
+            consumer_secret=env_vars['consumer_secret'],
+            access_token=env_vars['access_token'],
+            access_token_secret=env_vars['access_token_secret'],
+            bearer_token=env_vars['bearer_token']
         )
 
         return client
     
     def __init__(self):
 
-        consumer_key,consumer_secret,access_token,access_token_secret,bearer_token = self.load_environment_variables()
+        env_vars = self.load_environment_variables()
 
-        self.auth = tweepy.OAuth1UserHandler(
-            consumer_key,
-            consumer_secret,
-            access_token,
-            access_token_secret,
+        tweepy.OAuth1UserHandler(
+            consumer_key=env_vars['consumer_key'],
+            consumer_secret=env_vars['consumer_secret'],
+            access_token=env_vars['access_token'],
+            access_token_secret=env_vars['access_token_secret'],
         )
 
         self.client = self.init_client()
 
-    def tweet(self,text:str,env:str):
-        if env == 'tweet':
-            print(text)
-        else:
-            self.client.create_tweet(text)
+    def tweet(self,tweet:TweetDict,env:ExecutionEnvType):
+        """
+            Receives two arguments :
 
-    def tweet_all(self,tweets:list):
-        for tweet in tweets:
+            tweet:TweetDict -> a dictionnary whose 'summary' property we will tweet
+            env: str -> if env is equal to 'tweet', text will be printed to the command line.
+        """
+        if env == 'local':
+            print(tweet)
+        else:
             self.client.create_tweet(text=tweet['summary'])
+
+    def tweet_all(self,tweets:List[TweetDict],env:ExecutionEnvType):
+        """
+            Receives a list of dictionaries through which we loop to tweet each
+        """
+        for tweet in tweets:
+            self.tweet(tweet,env)
