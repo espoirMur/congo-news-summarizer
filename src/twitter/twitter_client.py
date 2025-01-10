@@ -9,11 +9,18 @@ class TweetDict(TypedDict):
     urls: List[str]
     summary: str
 
+class EnvironmentVars(TypedDict):
+    consumer_secret : str | None
+    consumer_key : str | None
+    access_token : str | None
+    access_token_secret : str | None
+    bearer_token : str | None
+
 ExecutionEnvType = Literal['local','production']
 
 class TwitterClient:
 
-    def load_environment_variables(self, environment: str = "local"):
+    def load_environment_variables(self, environment: str = "local") -> EnvironmentVars:
         """Load an environment variables and return them, raise a value error if one of them is empty."""
 
         # Get a specific ENV file
@@ -41,7 +48,7 @@ class TwitterClient:
         
         return env_vars
     
-    def init_client(self):
+    def init_client(self) -> tweepy.Client:
         """
             Instantiates the client to consume the API and returns it
         """
