@@ -87,8 +87,13 @@ class TwitterClient:
         """
         if env == 'local':
             print(tweet)
+            return True
         else:
-            self.client.create_tweet(text=tweet['summary'])
+            try :
+                self.client.create_tweet(text=tweet['summary'])
+                return True
+            except Exception as error:
+                return False
 
     def tweet_all(self,tweets:List[TweetDict],env:ExecutionEnvType):
         """
