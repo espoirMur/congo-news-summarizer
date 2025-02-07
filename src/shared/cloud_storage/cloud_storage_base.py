@@ -18,7 +18,7 @@ class BackBlazeCloudStorageBase:
 	def load_environment_variables(self, environment: str = "local") -> Tuple[str, str]:
 		"""Load an environment variables and return them, raise a value error if one of them is empty."""
 		current_directory = Path.cwd()
-		env_file = current_directory.joinpath(f".env_{environment}")
+		env_file = current_directory.joinpath(".env_cloud_storage")
 		load_dotenv(env_file)
 		application_key_id = os.getenv("BACK_BLAZE_KEY_ID")
 		application_key = os.getenv("BACK_BLAZE_APPLICATION_KEY")

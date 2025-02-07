@@ -37,3 +37,5 @@ The Generative model is  a Qwen1.5b model hosted using llama.cpp and run on ubun
 ### A front end
 
 This is the final part, it will display the news summaries as a UI and user can interact with it.
+
+You can read more about this project in [this presentation](./docs/slides-export.pdf) I gave at PydataLondon Meetup. 
