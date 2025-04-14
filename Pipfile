@@ -24,6 +24,7 @@ scikit-learn = "==1.6.0"
 b2sdk= "==2.5.0"
 python-dotenv = "==1.0.1"
 Jinja2 = "==3.1.4"
+pydantic = "== 2.10.6"
 
 [dev-packages]
 notebook = "==7.2.2"
