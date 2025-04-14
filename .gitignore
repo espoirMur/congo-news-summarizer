@@ -166,3 +166,4 @@ cython_debug/
 .env_prod
 docker/nginx/.htpasswd 
 news-summaries-*
+k3data/
