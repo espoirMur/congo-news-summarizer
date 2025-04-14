@@ -4,25 +4,20 @@ from typing import Dict, List
 import requests
 from jinja2 import Template
 
+from src.schemas import SummarySchemas
 from src.shared.logger import setup_logger
 
 SUMMARIZATION_PROMPT_TEMPLATE = """
-Give a title and a short summary 2 to 3 sentences in french of the following document:
+Donnez un titre et un court résumé de 2 à 3 phrases en français des documents suivant :
 {{content}}
- Describes it in a style of a french new paper reporters.
+ Décrivez-le dans le style d'un journaliste de presse française qui ecrit une revue de presse.
 
-Don't summarize each document separately, the content in all the documents should be summarized.
+Ne résumez pas chaque document séparément, le contenu de tous les documents doit être résumé ensemble.
 
-
-The answer should have the format:
-
-Titre:
-Résumé:
-
-The title and summary should be in french not in English.
+Le titre et le résumé doivent être en français et non en anglais.
 """
 
-logger = setup_logger("cluster_modeler")
+logger = setup_logger("llm_generator")
 
 
 class LLamaCppGeneratorComponent:
@@ -82,6 +77,7 @@ class LLamaCppGeneratorComponent:
 				"<|im_end|>",
 			],
 			"seed": 42,
+			"json_schema": SummarySchemas.model_json_schema(),
 		}
 
 		json_data = json.dumps(data)

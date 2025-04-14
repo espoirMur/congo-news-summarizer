@@ -40,7 +40,7 @@ parser = argparse.ArgumentParser()
 
 # this file should run only today
 if __name__ == "__main__":
-	prompt = "You are a french news reporter"
+	prompt = "Vous êtes un journaliste congolais"
 	parser.add_argument("-e", "--environment", default="dev")
 	parser.add_argument("-s", "--save_to_s3", default=False)
 	parser.add_argument("-f", "--file_name", default=None)
@@ -54,6 +54,7 @@ if __name__ == "__main__":
 		today_file_name = cloud_storage.generate_file_name(date=date)
 	download_bucket_name = os.getenv("DOWNLOAD_BUCKET_NAME")
 	upload_bucket_name = os.getenv("UPLOAD_BUCKET_NAME")
+	print("downloading form ", today_file_name)
 	api_url = os.getenv("API_URL")
 	data = cloud_storage.read_file_as_list(
 		bucket_name=download_bucket_name, file_name=today_file_name
@@ -65,6 +66,7 @@ if __name__ == "__main__":
 	local_file_name = f"news-summaries-{date}.json"
 	with open(local_file_name, "w") as temp_file:
 		json.dump(summaries, temp_file, ensure_ascii=False, indent=4)
+	logger.info(f"summaries saved at {local_file_name}")
 	if args.save_to_s3:
 		cloud_storage.upload_file(
 			bucket_name=upload_bucket_name,
