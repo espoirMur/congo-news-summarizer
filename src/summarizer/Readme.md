@@ -10,7 +10,6 @@ This is the readme for the new summarizer application.
 
 Before running make sure you have Python and Docker Installed in Your machine.
 
-You can install [python]() from this link and docker from [this one]().
 
 
 ### Download the Embedding Model.
