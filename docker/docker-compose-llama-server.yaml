@@ -21,7 +21,7 @@ services:
       - llamacpp-server
     labels:
       ofelia.enabled: "true"
-      ofelia.job-exec.generator.schedule:  "0 45 22 * * *"
+      ofelia.job-exec.generator.schedule:  "0 00 23 * * *"
       ofelia.job-exec.generator.command: "python src/llm/main.py -e prod --save_to_s3 1"
     environment:
       - API_URL=http://llamacpp-server:8000
