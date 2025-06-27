@@ -87,8 +87,21 @@ class TwitterClient:
         """
         if env == 'local':
             print(tweet)
+            return True
         else:
-            self.client.create_tweet(text=tweet['summary'])
+            try :
+                self.client.create_tweet(text=tweet['summary'])
+                return True
+            except tweepy.TweepyException as error:
+                return "ERROR_REQUEST_FAILED"
+            except tweepy.BadRequest:
+                return "ERROR_BAD_REQUEST"
+            except tweepy.Unauthorized:
+                return 'ERROR_UNAUTHORIZED_CHECK_YOUR_CREDENTIALS'
+            except tweepy.Forbidden:
+                return 'ERROR_REQUEST_FORBIDDEN'
+            except tweepy.TwitterServerError:
+                return 'ERROR_INTERNAL_SERVER_ERROR '
 
     def tweet_all(self,tweets:List[TweetDict],env:ExecutionEnvType):
         """
