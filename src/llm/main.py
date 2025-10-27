@@ -27,11 +27,18 @@ def summarize_documents(data: List, generator: LLamaCppGeneratorComponent):
 		urls = [news["url"] for news in news_data]
 		content = "\n".join([news["content"] for news in news_data])
 		content = normalize("NFKD", content)
-		summary = generator.run(template_values={"content": content})
-		logger.info(f"Done summarizing the documents  {label}")
-		if summary:
-			news_data = {"titles": titles, "urls": urls, "summary": summary}
-			summaries.append(news_data)
+		try:
+			summary = generator.run(template_values={"content": content})
+			logger.info(f"Done summarizing the documents  {label}")
+			if summary:
+				news_data = {"titles": titles, "urls": urls, "summary": summary}
+				summaries.append(news_data)
+			else:
+				logger.warning(f"No summary generated for documents with label {label}")
+				continue
+		except Exception as e:
+			logger.error(f"Error summarizing documents for label {label}: {e}")
+			continue
 	logger.info("Done summarizing all the documents")
 	return summaries
 
@@ -61,7 +68,7 @@ if __name__ == "__main__":
 	)
 	logger.info("done downloading the document")
 	llama_cpp_generator = LLamaCppGeneratorComponent(api_url=api_url, prompt=prompt)
-	assert llama_cpp_generator._ping_api(), "API is not up"
+	assert llama_cpp_generator._ping_api(), "API is n ot up"
 	summaries = summarize_documents(data, llama_cpp_generator)
 	local_file_name = f"news-summaries-{date}.json"
 	with open(local_file_name, "w") as temp_file:

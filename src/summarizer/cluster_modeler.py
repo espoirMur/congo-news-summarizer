@@ -74,8 +74,13 @@ class HierarchicalClusterModeler:
 
 	def select_top_clusters(self, news_df: pd.DataFrame) -> pd.DataFrame:
 		"""select the clusters with the more than two documents"""
-		cluster_counts = news_df["labels"].value_counts()
-		labels_with_more_than_one = cluster_counts[cluster_counts > 1].index
+		labels_with_more_than_one = (
+			news_df.groupby("labels")
+			.agg({"title": "nunique", "content": "count"})
+			.sort_values(by="title", ascending=False)
+			.query("title > 1")
+			.index
+		)
 		important_news_df = news_df.loc[news_df.labels.isin(labels_with_more_than_one)]
 		return important_news_df
 

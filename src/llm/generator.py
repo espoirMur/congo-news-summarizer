@@ -81,8 +81,6 @@ class LLamaCppGeneratorComponent:
 		}
 
 		json_data = json.dumps(data)
-
-		# Send the POST request
 		try:
 			response = requests.post(
 				f"{self.api_url}/completion",
@@ -92,10 +90,9 @@ class LLamaCppGeneratorComponent:
 			)
 			response.raise_for_status()
 		except requests.exceptions.ConnectionError as err:
-			raise SystemExit(err)
+			raise err
 		except requests.exceptions.HTTPError as err:
-			raise SystemExit(err)
-
+			raise err
 		return response.json()["content"]
 
 	def run(
@@ -108,7 +105,7 @@ class LLamaCppGeneratorComponent:
 			response = self.generate_response(chat_tokens)
 		except Exception as e:
 			logger.error(e)
-			return False  # may be not a great idea
+			raise e
 		return response
 
 	def _ping_api(self) -> bool:

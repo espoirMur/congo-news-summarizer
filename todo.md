@@ -12,3 +12,17 @@
 - [] Work on Celery and architecture the application.
 - [] Build a server that serve the summaries as static files
 - [] Automate the gguf download
+
+
+### RoadMap Octobre 2025
+Scrappe ACP cd
+Update the UI to take subscriptions
+
+- [] Send the summarization oupdate
+- Update the UI to get the subcription box.
+- Start design the mailing list
+
+Release and do more marketing
+
+
+## Integrate Twitter Posting daily news.
