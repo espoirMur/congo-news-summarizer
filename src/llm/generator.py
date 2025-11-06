@@ -69,9 +69,9 @@ class LLamaCppGeneratorComponent(BaseGenerator):
 
 		return response.json()["content"]
 
-	def run(self, template_values: dict, prompt_template: str) -> str:
+	def run(self, template_values: dict) -> str:
 		"""Generate response using the Llama.cpp api"""
-		chat_input = self.generate_chat_input(template_values, prompt_template)
+		chat_input = self.generate_chat_input(template_values)
 		chat_tokens = self.apply_chat_template(messages=chat_input, add_generation_prompt=True)
 		response = self.generate_response(chat_tokens)
 		return response

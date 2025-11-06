@@ -6,22 +6,21 @@ authors = [{name = "espoir.mur"}]
 requires-python = ">=3.10"
 
 dependencies = [
-    "sqlalchemy ==2.0.27",
-    "pgvector ==0.2.4",
-    "psycopg2-binary ==2.9.9",
-    "b2sdk ==2.5.0",
     "python-dotenv ==1.0.1",
-    "pandas ==2.2.3",
-   
 ]
 
 [dependency-groups]
 
 clustering = [
+    "pandas ==2.2.3",
     "torch ==2.5.1",
     "sentence-transformers ==3.3.1",
     "numpy ==2.2.0",
     "scikit-learn ==1.6.0",
+    "sqlalchemy ==2.0.27",
+    "pgvector ==0.2.4",
+    "psycopg2-binary ==2.9.9",
+    "b2sdk ==2.5.0",
 ]
 dev = [
     "ipykernel",
@@ -37,6 +36,7 @@ generator = [
     "python-dotenv ==1.0.1",
     "Jinja2 ==3.1.4",
     "pydantic ==2.10.6",
+    "tenacity==9.1.2",
 ]
 
 twitter = [

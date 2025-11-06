@@ -20,7 +20,7 @@ class BaseGenerator:
 		chat_input = [
 			{"role": "system", "content": self.system_prompt},
 			# just try to limit the characters
-			{"role": "user", "content": user_message[:2000]},
+			{"role": "user", "content": user_message},
 		]
 
 		return chat_input

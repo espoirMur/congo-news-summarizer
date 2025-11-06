@@ -20,11 +20,14 @@ RUN apt-get update && apt-get install -y \
     libxslt1-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install python dependencies in /.venv
-COPY pyproject.toml .
-COPY uv.lock .
-COPY src/_version.py src/_version.py
-RUN uv venv --python 3.10 /.venv
+ENV WORKDIR=/app
+WORKDIR ${WORKDIR}
+
+COPY ./src/ ${WORKDIR}
+COPY ./src/_version.py ${WORKDIR}/src/
+COPY pyproject.toml ${WORKDIR}
+COPY uv.lock ${WORKDIR}
+
 RUN uv sync --frozen --no-dev --no-editable --group ${PIP_SECTION}
 
 FROM python:3.10-slim AS runtime
@@ -33,18 +36,20 @@ RUN apt-get update && apt-get install -y \
     libxslt1.1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy virtual env from python-deps stage
-COPY --from=python-deps /.venv /.venv
-ENV PATH="/.venv/bin:$PATH"
-ENV WORKDIR="/home/appuser"
+# Setup a non-root user
+RUN groupadd --system --gid 999 es.py \
+ && useradd --system --gid 999 --uid 999 --create-home es.py
 
-RUN useradd --create-home es.py
-RUN mkdir /home/code
-ENV WORKING_DIR=/home/code
+COPY --from=python-deps --chown=es.py:es.py /app /app
+
+ENV PATH="/app/.venv/bin:$PATH"
+ENV WORKDIR="/app"
+ENV PYTHONUSERBASE=$PATH
+
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
-COPY src ${WORKING_DIR}/src
-COPY src/shared ${WORKING_DIR}/src/shared
-WORKDIR ${WORKING_DIR}
-RUN chown -R es.py:es.py ${WORKING_DIR}
-RUN chmod -R 755 ${WORKING_DIR}
+COPY src ${WORKDIR}/src
+ENV PYTHONPATH="${PATH}:${WORKDIR}"
+WORKDIR ${WORKDIR}
+RUN chown -R es.py:es.py ${WORKDIR}
+RUN chmod -R 755 ${WORKDIR}
 USER es.py

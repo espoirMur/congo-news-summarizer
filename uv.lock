@@ -373,19 +373,20 @@ wheels = [
 name = "congonewssummarizer"
 source = { editable = "." }
 dependencies = [
-    { name = "b2sdk" },
-    { name = "pandas" },
-    { name = "pgvector" },
-    { name = "psycopg2-binary" },
     { name = "python-dotenv" },
-    { name = "sqlalchemy" },
+    { name = "tenacity" },
 ]
 
 [package.dev-dependencies]
 clustering = [
+    { name = "b2sdk" },
     { name = "numpy" },
+    { name = "pandas" },
+    { name = "pgvector" },
+    { name = "psycopg2-binary" },
     { name = "scikit-learn" },
     { name = "sentence-transformers" },
+    { name = "sqlalchemy" },
     { name = "torch", version = "2.5.1", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(platform_machine == 'aarch64' and sys_platform == 'linux') or sys_platform == 'darwin'" },
     { name = "torch", version = "2.5.1+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(platform_machine != 'aarch64' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')" },
 ]
@@ -402,6 +403,7 @@ generator = [
     { name = "jinja2" },
     { name = "pydantic" },
     { name = "python-dotenv" },
+    { name = "tenacity" },
 ]
 twitter = [
     { name = "certifi" },
@@ -417,19 +419,20 @@ twitter = [
 
 [package.metadata]
 requires-dist = [
-    { name = "b2sdk", specifier = "==2.5.0" },
-    { name = "pandas", specifier = "==2.2.3" },
-    { name = "pgvector", specifier = "==0.2.4" },
-    { name = "psycopg2-binary", specifier = "==2.9.9" },
     { name = "python-dotenv", specifier = "==1.0.1" },
-    { name = "sqlalchemy", specifier = "==2.0.27" },
+    { name = "tenacity", specifier = ">=9.1.2" },
 ]
 
 [package.metadata.requires-dev]
 clustering = [
+    { name = "b2sdk", specifier = "==2.5.0" },
     { name = "numpy", specifier = "==2.2.0" },
+    { name = "pandas", specifier = "==2.2.3" },
+    { name = "pgvector", specifier = "==0.2.4" },
+    { name = "psycopg2-binary", specifier = "==2.9.9" },
     { name = "scikit-learn", specifier = "==1.6.0" },
     { name = "sentence-transformers", specifier = "==3.3.1" },
+    { name = "sqlalchemy", specifier = "==2.0.27" },
     { name = "torch", specifier = "==2.5.1", index = "https://download.pytorch.org/whl/cpu" },
 ]
 dev = [
@@ -445,6 +448,7 @@ generator = [
     { name = "jinja2", specifier = "==3.1.4" },
     { name = "pydantic", specifier = "==2.10.6" },
     { name = "python-dotenv", specifier = "==1.0.1" },
+    { name = "tenacity", specifier = "==9.1.2" },
 ]
 twitter = [
     { name = "certifi", specifier = "==2024.12.14" },
@@ -2742,6 +2746,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ca/99/5a5b6f19ff9f083671ddf7b9632028436167cd3d33e11015754e41b249a4/sympy-1.13.1.tar.gz", hash = "sha256:9cebf7e04ff162015ce31c9c6c9144daa34a93bd082f54fd8f12deca4f47515f", size = 7533040, upload_time = "2024-07-19T09:26:51.238Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b2/fe/81695a1aa331a842b582453b605175f419fe8540355886031328089d840a/sympy-1.13.1-py3-none-any.whl", hash = "sha256:db36cdc64bf61b9b24578b6f7bab1ecdd2452cf008f34faa33776680c26d66f8", size = 6189177, upload_time = "2024-07-19T09:26:48.863Z" },
+]
+
+[[package]]
+name = "tenacity"
+version = "9.1.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/0a/d4/2b0cd0fe285e14b36db076e78c93766ff1d529d70408bd1d2a5a84f1d929/tenacity-9.1.2.tar.gz", hash = "sha256:1169d376c297e7de388d18b4481760d478b0e99a777cad3a9c86e556f4b697cb", size = 48036, upload_time = "2025-04-02T08:25:09.966Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e5/30/643397144bfbfec6f6ef821f36f33e57d35946c44a2352d3c9f0ae847619/tenacity-9.1.2-py3-none-any.whl", hash = "sha256:f77bf36710d8b73a50b2dd155c97b870017ad21afe6ab300326b0371b3b05138", size = 28248, upload_time = "2025-04-02T08:25:07.678Z" },
 ]
 
 [[package]]

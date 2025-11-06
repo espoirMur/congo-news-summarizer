@@ -74,13 +74,16 @@ if __name__ == "__main__":
 		today_file_name = cloud_storage.generate_file_name(date=date)
 	download_bucket_name = os.getenv("DOWNLOAD_BUCKET_NAME")
 	upload_bucket_name = os.getenv("UPLOAD_BUCKET_NAME")
-	print("downloading form ", today_file_name)
+	logger.info(f"downloading form {today_file_name}")
 	api_url = os.getenv("API_URL")
+	api_key = os.getenv("RUN_POD_API_KEY")
+	assert api_url is not None, "API_URL is not set"
+	assert api_key is not None, "RUN_POD_API_KEY is not set"
 	data = cloud_storage.read_file_as_list(
 		bucket_name=download_bucket_name, file_name=today_file_name
 	)
 	logger.info("done downloading the document")
-	llama_cpp_generator = LLamaCppGeneratorComponent(api_url=api_url, prompt=prompt)
+	llama_cpp_generator = LLamaCppGeneratorComponent(api_url=api_url, api_key=api_key)
 	assert llama_cpp_generator._ping_api(), "API is n ot up"
 	summaries = summarize_documents(data, llama_cpp_generator)
 	local_file_name = f"news-summaries-{date}.json"

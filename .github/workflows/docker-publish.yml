@@ -32,7 +32,7 @@ jobs:
           tags: ${{ vars.DOCKER_USERNAME }}/summarization-generator:latest
           file: docker/Dockerfile-base
           build-args: |
-            PIP_SECTION=generator-packages
+            PIP_SECTION=generator
           context: .
           cache-from: type=registry,ref=${{ vars.DOCKER_USERNAME }}/summarization-generator:latest
           cache-to: type=inline
