@@ -13,6 +13,7 @@ services:
   ofelia:
     image: mcuadros/ofelia:latest
     restart: "unless-stopped"
+    container_name: ofelia-generator
     depends_on:
       - news-summarizer-generative-model
     command: daemon --docker -f label=com.docker.compose.project=${COMPOSE_PROJECT_NAME}
