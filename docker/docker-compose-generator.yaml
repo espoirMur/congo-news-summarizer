@@ -10,10 +10,9 @@ services:
       ofelia.job-exec.generator.schedule:  "0 00 23 * * *"
       ofelia.job-exec.generator.command: "python src/llm/main.py -e prod --save_to_s3 1"
   
-  ofelia:
+  ofelia_generator:
     image: mcuadros/ofelia:latest
     restart: "unless-stopped"
-    container_name: ofelia-generator
     depends_on:
       - news-summarizer-generative-model
     command: daemon --docker -f label=com.docker.compose.project=${COMPOSE_PROJECT_NAME}

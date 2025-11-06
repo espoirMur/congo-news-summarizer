@@ -12,7 +12,7 @@ services:
       ofelia.job-exec.summarizer.schedule:  "0 00 21 * * *"
       ofelia.job-exec.summarizer.command: "python src/summarizer/main.py -e prod -d 0"
 
-  ofelia:
+  ofelia_summarizer:
     image: mcuadros/ofelia:latest
     restart: "unless-stopped"
     depends_on:
