@@ -7,7 +7,7 @@ services:
       - ../.env_prod
     labels:
       ofelia.enabled: "true"
-      ofelia.job-exec.generator.schedule:  "0 00 23 * * *"
+      ofelia.job-exec.generator.schedule:  "0 00 23 05 * *"
       ofelia.job-exec.generator.command: "python src/llm/main.py -e prod --save_to_s3 1"
   
   ofelia_generator:
