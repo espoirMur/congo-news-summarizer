@@ -43,3 +43,6 @@ CPU information
 AMD EPYC 7282 16-Core Processor
 2.7 GHz
 Cache 512kb
+
+
+#### Need to sort out stuff..

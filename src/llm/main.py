@@ -48,10 +48,23 @@ parser = argparse.ArgumentParser()
 # this file should run only today
 if __name__ == "__main__":
 	prompt = "Vous êtes un journaliste congolais"
-	parser.add_argument("-e", "--environment", default="dev")
-	parser.add_argument("-s", "--save_to_s3", default=False)
-	parser.add_argument("-f", "--file_name", default=None)
-	parser.add_argument("-d", "--day_ago", default=0, type=int)
+	parser.add_argument("-e", "--environment", default="dev", help="the environment to use")
+	parser.add_argument(
+		"-s",
+		"--save_to_s3",
+		default=False,
+		help="where or not to save the file to the cloud storage",
+	)
+	parser.add_argument(
+		"-f", "--file_name", default=None, help="the file name containing to summary"
+	)
+	parser.add_argument(
+		"-d",
+		"--day_ago",
+		default=0,
+		type=int,
+		help="the number of days ago when to save the file, if we run on 23/01/2013 and this is 2 the file will be saved with date 21/01/2013",
+	)
 	args = parser.parse_args()
 	cloud_storage = BackBlazeCloudStorageCSV(environment=args.environment)
 	date = (datetime.now() - timedelta(days=args.day_ago)).strftime("%Y-%m-%d")

@@ -1,72 +1,46 @@
 import json
-from typing import Dict, List
 
 import requests
-from jinja2 import Template
+from tenacity import retry, stop_after_attempt, wait_fixed
 
+from src.llm.base import BaseGenerator
 from src.schemas import SummarySchemas
 from src.shared.logger import setup_logger
-
-SUMMARIZATION_PROMPT_TEMPLATE = """
-Donnez un titre et un court résumé de 2 à 3 phrases en français des documents suivant :
-{{content}}
- Décrivez-le dans le style d'un journaliste de presse française qui ecrit une revue de presse.
-
-Ne résumez pas chaque document séparément, le contenu de tous les documents doit être résumé ensemble.
-
-Le titre et le résumé doivent être en français et non en anglais.
-"""
 
 logger = setup_logger("llm_generator")
 
 
-class LLamaCppGeneratorComponent:
+class LLamaCppGeneratorComponent(BaseGenerator):
 	"""
 	This class is responsible for generating response using the Llamma.cpp api
-
 	"""
 
 	def __init__(
 		self,
 		api_url: str,
-		prompt: str,
+		api_key: str = None,
+		temperature: float = 0.3,
+		n_predict: int = 768,
 	) -> None:
 		self.api_url = api_url
-		self.prompt = prompt
-
-	def generate_chat_input(
-		self, template_values: dict, prompt_template: str = SUMMARIZATION_PROMPT_TEMPLATE
-	) -> List[Dict]:
-		"""generate the prompt to be used for the chat input"""
-
-		template = Template(prompt_template)
-		prompt = template.render(**template_values)
-
-		chat_input = [
-			{"role": "system", "content": self.prompt},
-			{"role": "user", "content": prompt},
-		]
-
-		return chat_input
-
-	def generate_response(self, prompt: str) -> str:
-		"""
-		This function generates response using the Llamma.cpp api
-
-		Args:
-		    prompt (str): The prompt to generate response from
-
-		Returns:
-		    str: The generated response
-		"""
-		headers = {
+		self.system_prompt = " Vous etes un journaliste d'acutualité congolaise."
+		self.api_key = api_key
+		self.temperature = temperature
+		self.n_predict = n_predict
+		self.headers = {
 			"Content-Type": "application/json",
+			"Authorization": f"Bearer {self.api_key}" if self.api_key else "",
 		}
 
+	@retry(wait=wait_fixed(30), stop=stop_after_attempt(5), reraise=True)
+	def generate_response(self, chat_content: str) -> str:
+		"""
+		This function generates response using the Llamma.cpp api
+		"""
 		data = {
-			"prompt": prompt,
-			"n_predict": 768,
-			"temperature": 0.3,
+			"prompt": chat_content,
+			"n_predict": self.n_predict,
+			"temperature": self.temperature,
 			"top_k": 40,
 			"top_p": 0.90,
 			"stopped_eos": True,
@@ -84,50 +58,31 @@ class LLamaCppGeneratorComponent:
 		try:
 			response = requests.post(
 				f"{self.api_url}/completion",
-				headers=headers,
+				headers=self.headers,
 				data=json_data,
-				timeout=3000,
+				timeout=300,
 			)
 			response.raise_for_status()
-		except requests.exceptions.ConnectionError as err:
+		except requests.exceptions.RequestException as err:
+			logger.error(f"Llama.cpp API request failed: {err}")
 			raise err
-		except requests.exceptions.HTTPError as err:
-			raise err
+
 		return response.json()["content"]
 
-	def run(
-		self, template_values: dict, prompt_template: str = SUMMARIZATION_PROMPT_TEMPLATE
-	) -> str:
-		"""Generate response using the Llamma.cpp api"""
+	def run(self, template_values: dict, prompt_template: str) -> str:
+		"""Generate response using the Llama.cpp api"""
 		chat_input = self.generate_chat_input(template_values, prompt_template)
 		chat_tokens = self.apply_chat_template(messages=chat_input, add_generation_prompt=True)
-		try:
-			response = self.generate_response(chat_tokens)
-		except Exception as e:
-			logger.error(e)
-			raise e
+		response = self.generate_response(chat_tokens)
 		return response
 
+	@retry(wait=wait_fixed(60), stop=stop_after_attempt(10), reraise=True)
 	def _ping_api(self) -> bool:
-		"""Ping the Llamma.cpp api to check if it is up"""
+		"""Ping the Llama.cpp api to check if it is up"""
 		try:
-			response = requests.get(f"{self.api_url}/health", timeout=20)
-			return response.status_code == 200 and response.json()["status"] == "ok"
+			response = requests.get(f"{self.api_url}/ping", timeout=300, headers=self.headers)  #
+			response.raise_for_status()
+			return response.status_code == 200 and response.json().get("status") == "ok"
 		except requests.exceptions.RequestException as e:
-			logger.error(e)
+			logger.error(f"Llama.cpp ping failed: {e}")
 			return False
-
-	def apply_chat_template(self, messages, add_generation_prompt=False):
-		"""
-		Generates a structured prompt based on a list of message dictionaries.
-
-		Args:
-		messages (list): A list of dictionaries, each with 'role' and 'content' keys.
-		add_generation_prompt (bool): Whether to add a final assistant prompt block.
-
-		Returns:
-		str: The formatted prompt.
-		"""
-		chat_template = "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- messages[0]['content'] }}\n    {%- else %}\n        {{- 'You are Qwen, created by Alibaba Cloud. You are a helpful assistant.' }}\n    {%- endif %}\n    {{- \"\\n\\n# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0]['content'] + '<|im_end|>\\n' }}\n    {%- else %}\n        {{- '<|im_start|>system\\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- for message in messages %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) or (message.role == \"assistant\" and not message.tool_calls) %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role }}\n        {%- if message.content %}\n            {{- '\\n' + message.content }}\n        {%- endif %}\n        {%- for tool_call in message.tool_calls %}\n            {%- if tool_call.function is defined %}\n                {%- set tool_call = tool_call.function %}\n            {%- endif %}\n            {{- '\\n<tool_call>\\n{\"name\": \"' }}\n            {{- tool_call.name }}\n            {{- '\", \"arguments\": ' }}\n            {{- tool_call.arguments | tojson }}\n            {{- '}\\n</tool_call>' }}\n        {%- endfor %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if (loop.index0 == 0) or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n"
-		template = Template(chat_template)
-		return template.render(messages=messages, add_generation_prompt=add_generation_prompt)
