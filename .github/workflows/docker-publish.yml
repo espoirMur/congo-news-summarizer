@@ -45,7 +45,7 @@ jobs:
           tags: ${{ vars.DOCKER_USERNAME }}/summarization-clustering:latest
           file: docker/Dockerfile-base
           build-args: |
-            PIP_SECTION=clustering-packages
+            PIP_SECTION=clustering
           context: .
           cache-from: type=registry,ref=${{ vars.DOCKER_USERNAME }}/summarization-clustering:latest
           cache-to: type=inline

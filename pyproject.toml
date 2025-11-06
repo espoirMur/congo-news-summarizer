@@ -1,0 +1,136 @@
+[project]
+name = "CongoNewsSummarizer"
+dynamic = ["version"]
+description = "Congo news sumarizer project"
+authors = [{name = "espoir.mur"}]
+requires-python = ">=3.10"
+
+dependencies = [
+    "sqlalchemy ==2.0.27",
+    "pgvector ==0.2.4",
+    "psycopg2-binary ==2.9.9",
+    "b2sdk ==2.5.0",
+    "python-dotenv ==1.0.1",
+    "pandas ==2.2.3",
+   
+]
+
+[dependency-groups]
+
+clustering = [
+    "torch ==2.5.1",
+    "sentence-transformers ==3.3.1",
+    "numpy ==2.2.0",
+    "scikit-learn ==1.6.0",
+]
+dev = [
+    "ipykernel",
+    "setuptools-scm",
+    "notebook ==7.2.2",
+    "pre-commit ==4.0.1",
+    "ruff ==0.7.3",
+    "nbstripout ==0.8.1",
+]
+
+generator = [
+    "b2sdk ==2.5.0",
+    "python-dotenv ==1.0.1",
+    "Jinja2 ==3.1.4",
+    "pydantic ==2.10.6",
+]
+
+twitter = [
+    "certifi ==2024.12.14",
+    "charset-normalizer ==3.4.1",
+    "idna ==3.10",
+    "oauthlib ==3.2.2",
+    "python-dotenv ==1.0.1",
+    "requests ==2.32.3",
+    "requests-oauthlib ==1.3.1",
+    "tweepy ==4.14.0",
+    "urllib3 ==2.3.0",
+]
+
+[build-system]
+requires = [
+    "setuptools>=45",
+    "setuptools-scm>=6.2",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"
+
+[tool.uv.sources]
+torch = { index = "pytorch" }
+
+[[tool.uv.index]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cpu"
+verify-ssl = true
+explicit = true
+
+# --- Tool Configuration ---
+
+[tool.setuptools_scm]
+version_scheme = "release-branch-semver"
+local_scheme = "no-local-version"
+write_to = "src/_version.py"
+
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+fix = true
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+    "*.ipynb",
+    "biogpt_model",
+    "convert_biogpt_original_pytorch_checkpoint_to_pytorch.py",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (Handles import sorting, making [tool.isort] redundant)
+    "C4",  # flake8-comprehensions
+    "NPY", # numpy
+]
+ignore = [
+    "E501",  # line too long, often disabled when using a separate formatter like Black/Ruff Format
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+    "W191",  # indentation contains tabs
+    "UP019",
+    "E101",
+    "C419",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "tab"
