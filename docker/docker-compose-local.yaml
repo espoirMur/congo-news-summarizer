@@ -3,24 +3,26 @@ services:
     image: espymur/summarization-generator:latest
     pull_policy: always
     tty: true
+    network_mode: host
     env_file:
-      - ../.env_prod
+      - ../.env_local
     labels:
       ofelia.enabled: "true"
-      ofelia.job-exec.generator.schedule:  "40 12 * * *"
-      ofelia.job-exec.generator.command: "python src/llm/main.py -e prod --save_to_s3 1"
+      ofelia.job-exec.generator:generator.schedule:  "50 14 * * *"
+      ofelia.job-exec.generator:generator.command: "python src/llm/main.py -e local --save_to_s3 0"
   news-summarizer-clustering:
     image: espymur/summarization-clustering:latest
     pull_policy: always
+    network_mode: host
     tty: true
     volumes:
       - ${PWD}/models/dunzhang/stella_en_400M_v5:/app/models/dunzhang/stella_en_400M_v5
     env_file:
-      - ../.env_prod
+      - ../.env_local
     labels:
       ofelia.enabled: "true"
-      ofelia.job-exec.summarizer.schedule:  "28 12 * * *"
-      ofelia.job-exec.summarizer.command: "python src/summarizer/main.py -e prod -d 1"
+      ofelia.job-exec.summarizer:summarizer.schedule:  "40 14 * * *"
+      ofelia.job-exec.summarizer:summarizer.command: "python src/summarizer/main.py -e local -d 1"
   ofelia:
     image: mcuadros/ofelia:latest
     restart: "unless-stopped"
@@ -28,5 +30,7 @@ services:
       - news-summarizer-generative-model
       - news-summarizer-clustering
     command: daemon --docker -f label=com.docker.compose.project=${COMPOSE_PROJECT_NAME}
+    environment:
+      - TZ=UTC
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro

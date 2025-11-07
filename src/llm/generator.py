@@ -1,7 +1,8 @@
 import json
 
 import requests
-from tenacity import retry, stop_after_attempt, wait_fixed
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 
 from src.llm.base import BaseGenerator
 from src.schemas import SummarySchemas
@@ -12,7 +13,7 @@ logger = setup_logger("llm_generator")
 
 class LLamaCppGeneratorComponent(BaseGenerator):
 	"""
-	This class is responsible for generating response using the Llamma.cpp api
+	This class is responsible for generating response using the Llama.cpp api
 	"""
 
 	def __init__(
@@ -31,8 +32,22 @@ class LLamaCppGeneratorComponent(BaseGenerator):
 			"Content-Type": "application/json",
 			"Authorization": f"Bearer {self.api_key}" if self.api_key else "",
 		}
+		self._setup_session()
 
-	@retry(wait=wait_fixed(30), stop=stop_after_attempt(5), reraise=True)
+	def _setup_session(self):
+		"""Initializes a requests.Session with an HTTPAdapter for retries."""
+		retry_strategy = Retry(
+			total=10,
+			backoff_factor=2,
+			status_forcelist=[429, 430, 500, 502, 503, 504],
+			allowed_methods=["POST", "GET"],
+			raise_on_status=False,
+		)
+		adapter = HTTPAdapter(max_retries=retry_strategy)
+		self.session = requests.Session()
+		self.session.mount("https://", adapter)
+		self.session.headers.update(self.headers)
+
 	def generate_response(self, chat_content: str) -> str:
 		"""
 		This function generates response using the Llamma.cpp api
@@ -56,9 +71,8 @@ class LLamaCppGeneratorComponent(BaseGenerator):
 
 		json_data = json.dumps(data)
 		try:
-			response = requests.post(
+			response = self.session.post(
 				f"{self.api_url}/completion",
-				headers=self.headers,
 				data=json_data,
 				timeout=300,
 			)
@@ -76,13 +90,17 @@ class LLamaCppGeneratorComponent(BaseGenerator):
 		response = self.generate_response(chat_tokens)
 		return response
 
-	@retry(wait=wait_fixed(60), stop=stop_after_attempt(10), reraise=True)
 	def _ping_api(self) -> bool:
 		"""Ping the Llama.cpp api to check if it is up"""
 		try:
-			response = requests.get(f"{self.api_url}/ping", timeout=300, headers=self.headers)  #
+			response = self.session.get(f"{self.api_url}/ping", timeout=300)
 			response.raise_for_status()
 			return response.status_code == 200 and response.json().get("status") == "ok"
-		except requests.exceptions.RequestException as e:
-			logger.error(f"Llama.cpp ping failed: {e}")
-			return False
+		except Exception as e:
+			logger.error(f"Error during HTTP request with retries: {e}")
+			raise e
+
+	def close(self):
+		"""Explicitly closes the requests session to release resources."""
+		logger.info("Closing requests session.")
+		self.session.close()
