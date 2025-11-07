@@ -11,7 +11,7 @@ services:
       ofelia.job-exec.generator.command: "python src/llm/main.py -e prod --save_to_s3 1"
   news-summarizer-clustering:
     image: espymur/summarization-clustering:latest
-    pull_policy: always
+    pull_policy: alway
     tty: true
     volumes:
       - ${PWD}/models/dunzhang/stella_en_400M_v5:/app/models/dunzhang/stella_en_400M_v5
@@ -19,7 +19,7 @@ services:
       - ../.env_prod
     labels:
       ofelia.enabled: "true"
-      ofelia.job-exec.summarizer.schedule:  "0 17 12 * * *"
+      ofelia.job-exec.summarizer.schedule:  "20 12 * * *"
       ofelia.job-exec.summarizer.command: "python src/summarizer/main.py -e prod -d 1"
   ofelia:
     image: mcuadros/ofelia:latest
