@@ -19,7 +19,7 @@ services:
       - ../.env_prod
     labels:
       ofelia.enabled: "true"
-      ofelia.job-exec.summarizer.schedule:  "24 12 * * *"
+      ofelia.job-exec.summarizer.schedule:  "28 12 * * *"
       ofelia.job-exec.summarizer.command: "python src/summarizer/main.py -e prod -d 1"
   ofelia:
     image: mcuadros/ofelia:latest
