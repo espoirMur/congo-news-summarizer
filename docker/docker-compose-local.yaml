@@ -4,8 +4,7 @@ services:
     pull_policy: always
     tty: true
     env_file:
-      - ../.env_local
-    network_mode: "host"  
+      - ../.env_prod
     labels:
       ofelia.enabled: "true"
       ofelia.job-exec.generator.schedule:  "40 12 * * *"
@@ -13,15 +12,14 @@ services:
   news-summarizer-clustering:
     image: espymur/summarization-clustering:latest
     pull_policy: always
-    network_mode: "host"  
     tty: true
     volumes:
       - ${PWD}/models/dunzhang/stella_en_400M_v5:/app/models/dunzhang/stella_en_400M_v5
     env_file:
-      - ../.env_local
+      - ../.env_prod
     labels:
       ofelia.enabled: "true"
-      ofelia.job-exec.summarizer.schedule:  "0 15 12 * * *"
+      ofelia.job-exec.summarizer.schedule:  "0 17 12 * * *"
       ofelia.job-exec.summarizer.command: "python src/summarizer/main.py -e prod -d 1"
   ofelia:
     image: mcuadros/ofelia:latest
