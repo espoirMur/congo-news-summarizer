@@ -8,7 +8,7 @@
       "program": "${file}",
       "console": "integratedTerminal",
       "args": ["-e local"],
-      "envFile": "${workspaceFolder}/.env_local"
+      "envFile": "${workspaceFolder}/.env_local",
     }
   ]
 }

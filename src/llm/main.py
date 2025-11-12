@@ -39,8 +39,7 @@ def summarize_documents(data: List, generator: LLamaCppGeneratorComponent):
 		except Exception as e:
 			logger.error(f"Error summarizing documents for label {label}: {e}")
 			continue
-		finally:
-			generator.close()
+		generator.close()
 	logger.info("Done summarizing all the documents")
 	return summaries
 

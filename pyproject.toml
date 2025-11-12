@@ -6,6 +6,7 @@ authors = [{name = "espoir.mur"}]
 requires-python = ">=3.10"
 
 dependencies = [
+    "numpy>=2.2.0",
     "python-dotenv ==1.0.1",
 ]
 
