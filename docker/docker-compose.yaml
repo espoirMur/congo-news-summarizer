@@ -7,8 +7,8 @@ services:
       - ../.env_prod
     labels:
       ofelia.enabled: "true"
-      ofelia.job-exec.generator.schedule:  "30 22 * * *"
-      ofelia.job-exec.generator.command: "python src/llm/main.py -e prod --save_to_s3 1"
+      ofelia.job-exec.generator:generator.schedule:  "30 22 * * *"
+      ofelia.job-exec.generator:generator.command: "python src/llm/main.py -e prod --save_to_s3 1"
   news-summarizer-clustering:
     image: espymur/summarization-clustering:latest
     pull_policy: always
@@ -19,8 +19,8 @@ services:
       - ../.env_prod
     labels:
       ofelia.enabled: "true"
-      ofelia.job-exec.summarizer.schedule:  "0 00 21 * * *"
-      ofelia.job-exec.summarizer.command: "python src/summarizer/main.py -e prod -d 0"
+      ofelia.job-exec.summarizer:summarizer.schedule:  "0 00 21 * * *"
+      ofelia.job-exec.summarizer:summarizer.command: "python src/summarizer/main.py -e prod -d 0"
   ofelia:
     image: mcuadros/ofelia:latest
     restart: "unless-stopped"
