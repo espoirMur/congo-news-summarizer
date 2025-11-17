@@ -7,7 +7,7 @@ services:
       - ../.env_prod
     labels:
       ofelia.enabled: "true"
-      ofelia.job-exec.generator:generator.schedule:  "0 30 22 * * *"
+      ofelia.job-exec.generator:generator.schedule:  "0 00 22 * * *"
       ofelia.job-exec.generator:generator.command: "python src/llm/main.py -e prod --save_to_s3 1"
   news-summarizer-clustering:
     image: espymur/summarization-clustering:latest
